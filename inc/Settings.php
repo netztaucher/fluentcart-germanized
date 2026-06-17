@@ -47,10 +47,10 @@ class Settings
 
             'withdrawal_button_footer' => 'yes',
 
-            // Erweitert (live zu verifizieren, daher default aus)
+            // Erweitert
             'email_legal_inject'   => 'no',
-            'invoice_enhance'      => 'no',
-            'invoice_number_prefix' => 'RE-',
+            'invoice_enhance'      => 'yes',
+            'invoice_note'         => '',
         ];
     }
 
@@ -120,19 +120,24 @@ class Settings
             return $clean;
         }
         foreach ($clean as $key => $default) {
+            $isToggle = (strpos($key, 'checkbox_') === 0) || in_array($default, ['yes', 'no'], true);
+
             if (!isset($input[$key])) {
-                // Checkboxen, die nicht gesendet wurden = "no"
-                if (strpos($key, 'checkbox_') === 0) {
+                // nicht gesendete Toggles = "no"
+                if ($isToggle) {
                     $clean[$key] = 'no';
                 }
                 continue;
             }
+
             if (strpos($key, 'page_') === 0) {
                 $clean[$key] = absint($input[$key]);
             } elseif ($key === 'tax_mode') {
                 $clean[$key] = in_array($input[$key], ['regular', 'kleinunternehmer'], true) ? $input[$key] : 'regular';
-            } elseif (strpos($key, 'checkbox_') === 0) {
+            } elseif ($isToggle) {
                 $clean[$key] = $input[$key] === 'yes' ? 'yes' : 'no';
+            } elseif ($key === 'invoice_note') {
+                $clean[$key] = sanitize_textarea_field($input[$key]);
             } else {
                 $clean[$key] = sanitize_text_field($input[$key]);
             }
@@ -215,8 +220,8 @@ class Settings
                 <h2><?php esc_html_e('Erweitert (live verifizieren)', 'fluentcart-germanized'); ?></h2>
                 <table class="form-table">
                     <tr><th><?php esc_html_e('Rechtstexte in Bestätigungsmail', 'fluentcart-germanized'); ?></th><td><?php echo $check('email_legal_inject', $s['email_legal_inject']); ?> <p class="description"><?php esc_html_e('Hängt USt-Hinweis + Rechtstext-Links an Bestell-Mails. Vorher Mail-Erkennung prüfen.', 'fluentcart-germanized'); ?></p></td></tr>
-                    <tr><th><?php esc_html_e('Rechnung erweitern', 'fluentcart-germanized'); ?></th><td><?php echo $check('invoice_enhance', $s['invoice_enhance']); ?> <p class="description"><?php esc_html_e('Fortlaufende Nr. + §19-Hinweis in FluentCart-Rechnung (Template-Hook live prüfen).', 'fluentcart-germanized'); ?></p></td></tr>
-                    <tr><th><?php esc_html_e('Rechnungsnummer-Präfix', 'fluentcart-germanized'); ?></th><td><?php echo $text('invoice_number_prefix', $s['invoice_number_prefix']); ?></td></tr>
+                    <tr><th><?php esc_html_e('Rechnung erweitern', 'fluentcart-germanized'); ?></th><td><?php echo $check('invoice_enhance', $s['invoice_enhance']); ?> <p class="description"><?php esc_html_e('Hängt §19-Hinweis (im Kleinunternehmer-Modus) + Rechnungsnotiz an den Beleg [fluent_cart_receipt]. FluentCart-Rechnungsnummer ist bereits fortlaufend.', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Rechnungsnotiz (optional)', 'fluentcart-germanized'); ?></th><td><textarea name="<?php echo esc_attr(self::OPTION); ?>[invoice_note]" rows="3" class="large-text"><?php echo esc_textarea($s['invoice_note']); ?></textarea><p class="description"><?php esc_html_e('Freitext, erscheint unten auf jedem Beleg (z.B. Leistungsdatum-Klausel).', 'fluentcart-germanized'); ?></p></td></tr>
                 </table>
 
                 <?php submit_button(); ?>

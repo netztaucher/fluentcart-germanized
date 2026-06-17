@@ -9,110 +9,66 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Rechnungs-Compliance (§14/§19 UStG):
- *  - vergibt eine fortlaufende Rechnungsnummer pro bezahlter Bestellung (idempotent, als Order-/Post-Meta).
- *  - stellt getInvoiceNumber() + §19-Hinweistext bereit.
+ * Rechnungs-Compliance (§14/§19 UStG).
  *
- * Die Einblendung in die FluentCart-HTML-Rechnung erfolgt über den
- * Template-Filter (live zu verifizieren). Standardmäßig vergibt das Modul nur
- * die Nummer; die Template-Injektion ist per Setting 'invoice_enhance' schaltbar.
+ * FluentCart vergibt bereits eine fortlaufende Rechnungsnummer ($order->invoice_no =
+ * Präfix + receipt_number) und weist USt., Verkäufer-/Käufer-USt-ID und Steuer-
+ * aufschlüsselung aus – die §14-Pflichtangaben sind also weitgehend abgedeckt.
+ *
+ * Dieses Modul ergänzt, was fehlt:
+ *  - §19-Hinweis „Gemäß §19 UStG wird keine Umsatzsteuer berechnet." (Kleinunternehmer-Modus)
+ *  - eine optionale, frei konfigurierbare Rechnungsnotiz (z.B. Leistungsdatum-Klausel)
+ *
+ * Mechanik: Der Beleg wird über den Shortcode [fluent_cart_receipt] gerendert; wir
+ * hängen unseren Hinweis sauber über den do_shortcode_tag-Filter an (kein Core-Eingriff).
  */
 class InvoiceFilter
 {
-    const COUNTER_OPTION = 'fcg_invoice_counter';
-    const META_KEY = '_fcg_invoice_number';
-
     public function register()
     {
-        // Nummernvergabe an bestätigten Bezahlt-Event.
-        add_action('fluent_cart/order_paid_done', [$this, 'assignNumber'], 10, 1);
-
-        if (Settings::get('invoice_enhance') === 'yes') {
-            // Versuch, §19-Hinweis/Nr. in die Rechnungs-Ausgabe einzuhängen.
-            add_filter('fluent_cart/invoice/footer_note', [$this, 'invoiceNote'], 10, 2);
+        if (Settings::get('invoice_enhance') !== 'yes') {
+            return;
         }
+        add_filter('do_shortcode_tag', [$this, 'appendToReceipt'], 10, 2);
     }
 
     /**
-     * @param mixed $payload FluentCart-Order-Event-Payload (Order-Objekt oder Array mit 'order').
+     * @param string $output Shortcode-Ausgabe
+     * @param string $tag    Shortcode-Name
+     * @return string
      */
-    public function assignNumber($payload)
+    public function appendToReceipt($output, $tag)
     {
-        $orderId = $this->extractOrderId($payload);
-        if (!$orderId) {
-            return;
+        if ($tag !== 'fluent_cart_receipt' || !is_string($output) || $output === '') {
+            return $output;
         }
-        // idempotent
-        $existing = get_post_meta($orderId, self::META_KEY, true);
-        if ($existing) {
-            return;
+        $note = $this->buildNote();
+        if (!$note) {
+            return $output;
         }
-        update_post_meta($orderId, self::META_KEY, $this->nextNumber());
+        return $output . $note;
     }
 
-    public function getInvoiceNumber($orderId)
+    public function buildNote()
     {
-        return get_post_meta((int) $orderId, self::META_KEY, true);
-    }
+        $lines = [];
 
-    /**
-     * Fortlaufende Nummer: PREFIXJAHR-laufend, z.B. RE-2026-000123
-     */
-    public function nextNumber()
-    {
-        $counter = (int) get_option(self::COUNTER_OPTION, 0);
-        $counter++;
-        update_option(self::COUNTER_OPTION, $counter, false);
-
-        $prefix = (string) Settings::get('invoice_number_prefix');
-        $year = (int) gmdate('Y');
-        $number = sprintf('%s%d-%06d', $prefix, $year, $counter);
-        return apply_filters('fcg/invoice_number', $number, $counter);
-    }
-
-    public function invoiceNote($note, $order = null)
-    {
-        $extra = [];
-        $orderId = $this->extractOrderId($order);
-        if ($orderId) {
-            $num = $this->getInvoiceNumber($orderId);
-            if ($num) {
-                $extra[] = sprintf(__('Rechnungsnummer: %s', 'fluentcart-germanized'), $num);
-            }
-        }
         if (Settings::isKleinunternehmer()) {
-            $extra[] = __('Gemäß §19 UStG wird keine Umsatzsteuer berechnet.', 'fluentcart-germanized');
+            $lines[] = esc_html__('Gemäß §19 UStG wird keine Umsatzsteuer berechnet.', 'fluentcart-germanized');
         }
-        if (!$extra) {
-            return $note;
-        }
-        return trim((string) $note . "\n" . implode("\n", $extra));
-    }
 
-    private function extractOrderId($payload)
-    {
-        if (is_numeric($payload)) {
-            return (int) $payload;
+        $custom = trim((string) Settings::get('invoice_note'));
+        if ($custom !== '') {
+            $lines[] = wp_kses_post($custom);
         }
-        if (is_object($payload)) {
-            if (isset($payload->ID)) {
-                return (int) $payload->ID;
-            }
-            if (isset($payload->id)) {
-                return (int) $payload->id;
-            }
-            if (isset($payload->order) && is_object($payload->order) && isset($payload->order->id)) {
-                return (int) $payload->order->id;
-            }
+
+        $lines = apply_filters('fcg/invoice_note_lines', $lines);
+        if (!$lines) {
+            return '';
         }
-        if (is_array($payload)) {
-            if (isset($payload['order']) && is_object($payload['order']) && isset($payload['order']->id)) {
-                return (int) $payload['order']->id;
-            }
-            if (isset($payload['order_id'])) {
-                return (int) $payload['order_id'];
-            }
-        }
-        return 0;
+
+        return '<div class="fcg-invoice-note" style="margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:13px;color:#475569;line-height:1.5">'
+            . implode('<br>', $lines)
+            . '</div>';
     }
 }
