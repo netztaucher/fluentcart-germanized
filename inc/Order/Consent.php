@@ -25,7 +25,9 @@ class Consent
     public function register()
     {
         add_filter('fluent_cart/checkout/validate_before_process', [$this, 'validate'], 10, 2);
+        // Consent protokollieren – bei bezahlten UND offline/unbezahlten Bestellungen.
         add_action('fluent_cart/order_paid_done', [$this, 'recordConsent'], 10, 1);
+        add_action('fluent_cart/order_placed_offline', [$this, 'recordConsent'], 10, 1);
     }
 
     /**
@@ -60,16 +62,43 @@ class Consent
 
     public function recordConsent($payload)
     {
-        $orderId = $this->orderId($payload);
-        if (!$orderId) {
+        $order = $this->resolveOrder($payload);
+        if (!$order || !method_exists($order, 'updateMeta')) {
             return;
         }
-        $given = $this->givenConsents([]);
-        update_post_meta($orderId, '_fcg_consent', [
-            'ids'  => $given,
+        // Doppel-Eintrag vermeiden
+        if (method_exists($order, 'getMeta') && $order->getMeta('_fcg_consent')) {
+            return;
+        }
+        $record = [
+            'ids'  => $this->givenConsents([]),
             'time' => gmdate('c'),
             'ip'   => isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '',
-        ]);
+        ];
+        try {
+            $order->updateMeta('_fcg_consent', $record);
+        } catch (\Throwable $e) {
+            // still nicht kritisch – Enforcement ist die eigentliche Absicherung
+        }
+    }
+
+    private function resolveOrder($payload)
+    {
+        if (is_object($payload) && method_exists($payload, 'updateMeta')) {
+            return $payload;
+        }
+        if (is_object($payload) && isset($payload->order) && is_object($payload->order)) {
+            return $payload->order;
+        }
+        $id = $this->orderId($payload);
+        if ($id && class_exists('\\FluentCart\\App\\Models\\Order')) {
+            try {
+                return \FluentCart\App\Models\Order::query()->find($id);
+            } catch (\Throwable $e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     /** @return array Liste der vom Kunden bestätigten Consent-IDs */

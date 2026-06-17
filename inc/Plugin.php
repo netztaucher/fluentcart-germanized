@@ -35,9 +35,11 @@ class Plugin
         // Settings + Admin
         (new Settings())->register();
 
-        // Einmaliger Seiten-Install (falls Plugin schon aktiv war) + manueller Button
+        // Einmaliger Seiten-Install (auch wenn Plugin schon aktiv war) – läuft auf dem
+        // nächsten Request (Front oder Admin), idempotent über Options-Flag.
+        add_action('init', ['\\FluentCartGermanized\\Installer', 'maybeInstall'], 20);
+
         if (is_admin()) {
-            add_action('admin_init', ['\\FluentCartGermanized\\Installer', 'maybeInstall']);
             add_action('admin_post_fcg_create_pages', function () {
                 if (!current_user_can('manage_options')) {
                     wp_die('');
