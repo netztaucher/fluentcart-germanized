@@ -23,6 +23,7 @@ class Withdrawal
 {
     const NONCE_FORM = 'fcg_widerruf';
     const NONCE_ONECLICK = 'fcg_withdraw_order';
+    const OPTION_REQUESTS = 'fcg_withdrawal_requests';
 
     public function register()
     {
@@ -32,6 +33,11 @@ class Withdrawal
         add_action('admin_post_nopriv_fcg_widerruf', [$this, 'handleSubmit']);
         add_action('admin_post_fcg_widerruf', [$this, 'handleSubmit']);
         add_action('wp_ajax_fcg_withdraw_order', [$this, 'ajaxWithdrawOrder']);
+
+        if (is_admin()) {
+            add_action('admin_menu', [$this, 'adminMenu'], 12);
+            add_action('admin_post_fcg_withdraw_mark', [$this, 'markHandled']);
+        }
 
         if (Settings::get('withdrawal_button_footer') === 'yes') {
             // Enfold-Footer-Copyright: „Vertrag widerrufen" als Textlink anhängen.
@@ -308,6 +314,14 @@ class Withdrawal
             __('E-Mail:', 'fluentcart-germanized') . ' ' . $custEmail,
             __('Zeitpunkt:', 'fluentcart-germanized') . ' ' . $stamp . ' UTC',
         ]);
+        $this->storeRequest([
+            'source' => 'one-click',
+            'name'   => $custName,
+            'email'  => $custEmail,
+            'order'  => $no,
+            'dates'  => '',
+        ]);
+
         wp_mail($this->shopEmail(), sprintf(__('Widerruf – Bestellung %s', 'fluentcart-germanized'), $no), $shopBody);
 
         if ($custEmail && is_email($custEmail)) {
@@ -339,6 +353,14 @@ class Withdrawal
             __('E-Mail:', 'fluentcart-germanized') . ' ' . $email,
             __('Bestellnummer:', 'fluentcart-germanized') . ' ' . $order,
             __('Bestelldatum:', 'fluentcart-germanized') . ' ' . $dates,
+        ]);
+
+        $this->storeRequest([
+            'source' => 'form',
+            'name'   => $name,
+            'email'  => $email,
+            'order'  => $order,
+            'dates'  => $dates,
         ]);
 
         wp_mail($this->shopEmail(), sprintf(__('Widerruf-Anfrage – %s', 'fluentcart-germanized'), $name), $body);
@@ -395,6 +417,110 @@ class Withdrawal
     {
         $ts = strtotime((string) $gmt);
         return $ts ? wp_date(get_option('date_format'), $ts) : (string) $gmt;
+    }
+
+    /* ---------- Speicherung + Admin-Übersicht ---------- */
+
+    private function storeRequest($entry)
+    {
+        $list = get_option(self::OPTION_REQUESTS, []);
+        if (!is_array($list)) {
+            $list = [];
+        }
+        $entry['time'] = gmdate('Y-m-d H:i:s');
+        $entry['status'] = 'open';
+        $entry['id'] = uniqid('w', false);
+        array_unshift($list, $entry);
+        $list = array_slice($list, 0, 300);
+        update_option(self::OPTION_REQUESTS, $list, false);
+    }
+
+    public function adminMenu()
+    {
+        add_submenu_page(
+            'fcg-settings',
+            __('Widerrufe', 'fluentcart-germanized'),
+            __('Widerrufe', 'fluentcart-germanized'),
+            'manage_options',
+            'fcg-withdrawals',
+            [$this, 'renderAdmin']
+        );
+    }
+
+    public function renderAdmin()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        $list = get_option(self::OPTION_REQUESTS, []);
+        if (!is_array($list)) {
+            $list = [];
+        }
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e('Widerrufe', 'fluentcart-germanized'); ?></h1>
+            <p class="description"><?php esc_html_e('1-Klick-Widerrufe sind zusätzlich direkt an der jeweiligen Bestellung (Notiz) vermerkt.', 'fluentcart-germanized'); ?></p>
+            <?php if (!$list): ?>
+                <p><?php esc_html_e('Keine Widerrufe vorhanden.', 'fluentcart-germanized'); ?></p>
+            <?php else: ?>
+            <table class="widefat striped">
+                <thead><tr>
+                    <th><?php esc_html_e('Zeit (UTC)', 'fluentcart-germanized'); ?></th>
+                    <th><?php esc_html_e('Quelle', 'fluentcart-germanized'); ?></th>
+                    <th><?php esc_html_e('Name', 'fluentcart-germanized'); ?></th>
+                    <th><?php esc_html_e('E-Mail', 'fluentcart-germanized'); ?></th>
+                    <th><?php esc_html_e('Bestellung', 'fluentcart-germanized'); ?></th>
+                    <th><?php esc_html_e('Status', 'fluentcart-germanized'); ?></th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                <?php foreach ($list as $r): ?>
+                    <tr>
+                        <td><?php echo esc_html($r['time'] ?? ''); ?></td>
+                        <td><?php echo esc_html($r['source'] ?? ''); ?></td>
+                        <td><?php echo esc_html($r['name'] ?? ''); ?></td>
+                        <td><?php echo esc_html($r['email'] ?? ''); ?></td>
+                        <td><?php echo esc_html($r['order'] ?? ''); ?></td>
+                        <td><?php echo ($r['status'] ?? 'open') === 'handled' ? '✓ ' . esc_html__('erledigt', 'fluentcart-germanized') : esc_html__('offen', 'fluentcart-germanized'); ?></td>
+                        <td>
+                            <?php if (($r['status'] ?? 'open') !== 'handled'): ?>
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0">
+                                <input type="hidden" name="action" value="fcg_withdraw_mark">
+                                <input type="hidden" name="id" value="<?php echo esc_attr($r['id'] ?? ''); ?>">
+                                <?php wp_nonce_field('fcg_withdraw_mark'); ?>
+                                <button class="button button-small"><?php esc_html_e('Als erledigt markieren', 'fluentcart-germanized'); ?></button>
+                            </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    public function markHandled()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die('');
+        }
+        check_admin_referer('fcg_withdraw_mark');
+        $id = isset($_POST['id']) ? sanitize_text_field(wp_unslash($_POST['id'])) : '';
+        $list = get_option(self::OPTION_REQUESTS, []);
+        if (is_array($list)) {
+            foreach ($list as &$r) {
+                if (($r['id'] ?? '') === $id) {
+                    $r['status'] = 'handled';
+                    break;
+                }
+            }
+            unset($r);
+            update_option(self::OPTION_REQUESTS, $list, false);
+        }
+        wp_safe_redirect(admin_url('admin.php?page=fcg-withdrawals'));
+        exit;
     }
 
     private function fmtMoney($minor)

@@ -18,7 +18,9 @@ FluentCart bringt eine solide Steuer-Engine mit (EU-VAT, OSS, Steuerklassen, HTM
 | Lieferzeit | Art. 246a EGBGB | `Frontend\DeliveryTime` | ✅ aktiv |
 | Button „Zahlungspflichtig bestellen" | §312j BGB | `Frontend\Checkout` (Filter + gettext) | ✅ aktiv |
 | Rechtstext-Links (Footer/Mail) | §5 DDG u.a. | `Legal\Pages` (`[fcg_legal_links]`) | ✅ aktiv |
-| Widerrufsformular + „Vertrag widerrufen" | §355/§356a BGB | `Frontend\Withdrawal` (`[fcg_widerrufsformular]`, `[fcg_widerrufsbutton]`) | ✅ aktiv |
+| Widerrufsformular + „Vertrag widerrufen" | §355/§356a BGB | `Frontend\Withdrawal` (`[fcg_widerrufsformular]`, `[fcg_widerrufsbutton]`) | ✅ eingeloggt 1-Klick je Order + Gast-Formular + Footer-Link + Admin-Übersicht „Widerrufe" |
+| Mindestalter-Bestätigung Checkout | JMStV | `Frontend\Checkout` + `Order\Consent` | ✅ cart-bedingt + server-enforced |
+| Storno/Gutschrift bei Refund | §14 UStG | `Order\InvoiceFilter` | ✅ fortl. Gutschriftnr. + Order-Meta/Notiz + Mail |
 | Pro-Produkt DE-Felder | — | `Admin\ProductFields` (eigener Screen, da FluentCart-Admin = Vue) | ✅ aktiv |
 | §19 Kleinunternehmer-Modus | §19 UStG | `Settings` (durchgängig) | ✅ aktiv |
 | Pflicht-Checkboxen (AGB/Widerruf/Datenschutz/Versanddienstleister/Digital-Verzicht) | §312i / §356 BGB / DSGVO | `Frontend\Checkout` + `Order\Consent` | ✅ JS-Injektion + cart-abhängig + **server-seitiges Enforcement** (Cookie → `validate_before_process`) + Protokoll in Order-Meta |
