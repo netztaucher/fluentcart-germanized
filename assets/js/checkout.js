@@ -87,10 +87,21 @@
         var form = document.querySelector(FORM);
         if (form) { form.addEventListener('submit', guard, true); }
 
-        // Fehler ausblenden, sobald angehakt
+        // Fehler ausblenden + Consent an Server spiegeln (für serverseitige Prüfung)
         block.addEventListener('change', function () {
             if (allChecked()) { showError(false); }
+            syncConsent();
         });
+        syncConsent();
+    }
+
+    // Consent in Cookie spiegeln -> serverseitig (validate_before_process) lesbar.
+    function syncConsent() {
+        var checked = [];
+        document.querySelectorAll('.fcg-checkout-legal .fcg-cb').forEach(function (cb) {
+            if (cb.checked) { checked.push(cb.id.replace(/^fcg-cb-/, '')); }
+        });
+        document.cookie = 'fcg_consent=' + encodeURIComponent(checked.join(',')) + '; path=/; max-age=1800; SameSite=Lax';
     }
 
     // Vue rendert asynchron – beobachten bis Button da ist.

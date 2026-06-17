@@ -3,7 +3,7 @@
 namespace FluentCartGermanized\Frontend;
 
 use FluentCartGermanized\Settings;
-use FluentCartGermanized\Legal\Pages;
+use FluentCartGermanized\Order\Consent;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -46,7 +46,9 @@ class Checkout
             $checkboxes[] = ['id' => $id, 'label' => $label, 'required' => true];
         }
 
-        wp_register_script('fcg-checkout', FCG_URL . 'assets/js/checkout.js', [], FCG_VERSION, true);
+        $jsPath = FCG_DIR . 'assets/js/checkout.js';
+        $jsVer = file_exists($jsPath) ? filemtime($jsPath) : FCG_VERSION;
+        wp_register_script('fcg-checkout', FCG_URL . 'assets/js/checkout.js', [], $jsVer, true);
         wp_localize_script('fcg-checkout', 'fcgCheckout', [
             'checkboxes' => $checkboxes,
             'errorText'  => __('Bitte bestätigen Sie die markierten Pflichtangaben, um fortzufahren.', 'fluentcart-germanized'),
@@ -69,6 +71,7 @@ class Checkout
      */
     private function checkboxDefs()
     {
+        $comp = (new Consent())->cartComposition();
         $defs = [];
         $link = function ($pageKey, $text) {
             $pid = (int) Settings::get($pageKey);
@@ -92,10 +95,12 @@ class Checkout
                 $link('page_datenschutz', __('Datenschutzerklärung', 'fluentcart-germanized'))
             );
         }
-        if (Settings::get('checkbox_shipping_data') === 'yes') {
+        // Versanddienstleister-Einwilligung nur bei physischen Artikeln im Warenkorb
+        if (Settings::get('checkbox_shipping_data') === 'yes' && $comp['has_physical']) {
             $defs['fcg_shipping_data'] = __('Ich willige ein, dass meine Adressdaten zur Zustellung an den beauftragten Versanddienstleister übermittelt werden.', 'fluentcart-germanized');
         }
-        if (Settings::get('checkbox_digital') === 'yes') {
+        // Digital-Verzicht nur bei digitalen Artikeln im Warenkorb
+        if (Settings::get('checkbox_digital') === 'yes' && $comp['has_digital']) {
             $defs['fcg_digital'] = __('Bei digitalen Inhalten: Ich stimme der sofortigen Ausführung zu und weiß, dass mein Widerrufsrecht damit erlischt.', 'fluentcart-germanized');
         }
 

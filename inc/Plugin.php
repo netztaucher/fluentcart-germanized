@@ -64,6 +64,9 @@ class Plugin
             (new \FluentCartGermanized\Admin\ProductFields())->register();
         }
 
+        // Server-seitiges Checkbox-Enforcement
+        (new \FluentCartGermanized\Order\Consent())->register();
+
         // Order-Compliance (default-schonend; Feinschliff der Hooks live verifizieren)
         (new \FluentCartGermanized\Order\EmailFilter())->register();
         (new \FluentCartGermanized\Order\InvoiceFilter())->register();
