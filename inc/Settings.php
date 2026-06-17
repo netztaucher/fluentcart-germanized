@@ -49,6 +49,11 @@ class Settings
             'withdrawal_window_days'   => '14',
             'withdrawal_email'         => '', // Fallback: admin_email
 
+            // GPSR (Produktsicherheit) – globale Defaults, pro Produkt überschreibbar
+            'gpsr_manufacturer'         => '',
+            'gpsr_manufacturer_address' => '',
+            'gpsr_eu_rep'               => '',
+
             // Erweitert
             'email_legal_inject'   => 'yes',
             'invoice_enhance'      => 'yes',
@@ -138,7 +143,7 @@ class Settings
                 $clean[$key] = in_array($input[$key], ['regular', 'kleinunternehmer'], true) ? $input[$key] : 'regular';
             } elseif ($isToggle) {
                 $clean[$key] = $input[$key] === 'yes' ? 'yes' : 'no';
-            } elseif ($key === 'invoice_note') {
+            } elseif (in_array($key, ['invoice_note', 'gpsr_manufacturer_address', 'gpsr_eu_rep'], true)) {
                 $clean[$key] = sanitize_textarea_field($input[$key]);
             } else {
                 $clean[$key] = sanitize_text_field($input[$key]);
@@ -219,6 +224,13 @@ class Settings
                     <tr><th><?php esc_html_e('Widerrufsformular', 'fluentcart-germanized'); ?></th><td><?php echo $pageSelect('page_widerrufsformular', $s['page_widerrufsformular']); ?></td></tr>
                     <tr><th><?php esc_html_e('Datenschutz', 'fluentcart-germanized'); ?></th><td><?php echo $pageSelect('page_datenschutz', $s['page_datenschutz']); ?></td></tr>
                     <tr><th><?php esc_html_e('Versandkosten', 'fluentcart-germanized'); ?></th><td><?php echo $pageSelect('page_versand', $s['page_versand']); ?></td></tr>
+                </table>
+
+                <h2><?php esc_html_e('GPSR / Produktsicherheit (Standard)', 'fluentcart-germanized'); ?></h2>
+                <table class="form-table">
+                    <tr><th><?php esc_html_e('Hersteller', 'fluentcart-germanized'); ?></th><td><?php echo $text('gpsr_manufacturer', $s['gpsr_manufacturer']); ?></td></tr>
+                    <tr><th><?php esc_html_e('Hersteller-Anschrift', 'fluentcart-germanized'); ?></th><td><textarea name="<?php echo esc_attr(self::OPTION); ?>[gpsr_manufacturer_address]" rows="3" class="large-text"><?php echo esc_textarea($s['gpsr_manufacturer_address']); ?></textarea></td></tr>
+                    <tr><th><?php esc_html_e('EU-Verantwortliche Person', 'fluentcart-germanized'); ?></th><td><textarea name="<?php echo esc_attr(self::OPTION); ?>[gpsr_eu_rep]" rows="3" class="large-text"><?php echo esc_textarea($s['gpsr_eu_rep']); ?></textarea><p class="description"><?php esc_html_e('Gilt für alle Produkte; pro Produkt unter „Produkt-Felder" überschreibbar.', 'fluentcart-germanized'); ?></p></td></tr>
                 </table>
 
                 <h2><?php esc_html_e('Erweitert (live verifizieren)', 'fluentcart-germanized'); ?></h2>

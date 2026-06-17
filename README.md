@@ -13,6 +13,8 @@ FluentCart bringt eine solide Steuer-Engine mit (EU-VAT, OSS, Steuerklassen, HTM
 | Preis-Label „inkl. MwSt" / §19 | PAngV §2/§4 | `Frontend\PriceLabels` | ✅ aktiv |
 | „zzgl. Versand" + Link (nur physisch) | PAngV §6 | `Frontend\PriceLabels` | ✅ aktiv |
 | Grundpreis €/Einheit | PAngV §4 | `Frontend\BasePrice` + `Admin\ProductFields` | ✅ aktiv |
+| Omnibus: niedrigster Preis 30 Tage | PAngV §11 | `Frontend\OmnibusPrice` | ✅ aktiv (Preis-Historie passiv, Anzeige bei Rabatt) |
+| GPSR Produktsicherheit (Hersteller/EU-Rep/Sicherheitshinweise) | VO (EU) 2023/988 | `Frontend\Gpsr` + Settings/`ProductFields` | ✅ aktiv (global + pro Produkt) |
 | Lieferzeit | Art. 246a EGBGB | `Frontend\DeliveryTime` | ✅ aktiv |
 | Button „Zahlungspflichtig bestellen" | §312j BGB | `Frontend\Checkout` (Filter + gettext) | ✅ aktiv |
 | Rechtstext-Links (Footer/Mail) | §5 DDG u.a. | `Legal\Pages` (`[fcg_legal_links]`) | ✅ aktiv |

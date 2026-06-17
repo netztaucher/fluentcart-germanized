@@ -77,6 +77,8 @@ class ProductFields
                         <th><?php esc_html_e('Lieferzeit', 'fluentcart-germanized'); ?></th>
                         <th><?php esc_html_e('Mindestalter', 'fluentcart-germanized'); ?></th>
                         <th><?php esc_html_e('Digital', 'fluentcart-germanized'); ?></th>
+                        <th><?php esc_html_e('GPSR Hersteller (Override)', 'fluentcart-germanized'); ?></th>
+                        <th><?php esc_html_e('Sicherheitshinweise', 'fluentcart-germanized'); ?></th>
                     </tr></thead>
                     <tbody>
                     <?php foreach ($products as $p):
@@ -95,6 +97,8 @@ class ProductFields
                             <td><input type="text" style="width:150px" name="fcg[<?php echo (int) $id; ?>][delivery_time]" value="<?php echo esc_attr(get_post_meta($id, '_fcg_delivery_time', true)); ?>"></td>
                             <td><input type="number" style="width:60px" name="fcg[<?php echo (int) $id; ?>][min_age]" value="<?php echo esc_attr(get_post_meta($id, '_fcg_min_age', true)); ?>"></td>
                             <td><input type="checkbox" name="fcg[<?php echo (int) $id; ?>][is_digital]" value="yes" <?php checked(get_post_meta($id, '_fcg_is_digital', true), 'yes'); ?>></td>
+                            <td><input type="text" style="width:150px" name="fcg[<?php echo (int) $id; ?>][gpsr_manufacturer]" value="<?php echo esc_attr(get_post_meta($id, '_fcg_gpsr_manufacturer', true)); ?>" placeholder="<?php esc_attr_e('Standard', 'fluentcart-germanized'); ?>"></td>
+                            <td><textarea style="width:200px;height:40px" name="fcg[<?php echo (int) $id; ?>][gpsr_safety]"><?php echo esc_textarea(get_post_meta($id, '_fcg_gpsr_safety', true)); ?></textarea></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -127,6 +131,8 @@ class ProductFields
             $this->setOrDelete($id, '_fcg_delivery_time', isset($fields['delivery_time']) ? sanitize_text_field($fields['delivery_time']) : '');
             $this->setOrDelete($id, '_fcg_min_age', isset($fields['min_age']) && $fields['min_age'] !== '' ? (int) $fields['min_age'] : '');
             $this->setOrDelete($id, '_fcg_is_digital', (isset($fields['is_digital']) && $fields['is_digital'] === 'yes') ? 'yes' : '');
+            $this->setOrDelete($id, '_fcg_gpsr_manufacturer', isset($fields['gpsr_manufacturer']) ? sanitize_text_field($fields['gpsr_manufacturer']) : '');
+            $this->setOrDelete($id, '_fcg_gpsr_safety', isset($fields['gpsr_safety']) ? sanitize_textarea_field($fields['gpsr_safety']) : '');
         }
 
         wp_safe_redirect(add_query_arg('fcg_saved', '1', admin_url('admin.php?page=fcg-product-fields')));

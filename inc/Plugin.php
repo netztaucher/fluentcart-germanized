@@ -54,7 +54,9 @@ class Plugin
         // Frontend-Compliance (PAngV / §312j)
         (new \FluentCartGermanized\Frontend\PriceLabels())->register();
         (new \FluentCartGermanized\Frontend\BasePrice())->register();
+        (new \FluentCartGermanized\Frontend\OmnibusPrice())->register();
         (new \FluentCartGermanized\Frontend\DeliveryTime())->register();
+        (new \FluentCartGermanized\Frontend\Gpsr())->register();
         (new \FluentCartGermanized\Frontend\Checkout())->register();
         (new \FluentCartGermanized\Frontend\Withdrawal())->register();
 
