@@ -132,7 +132,31 @@ class Consent
         if (Settings::get('checkbox_digital') === 'yes' && $comp['has_digital']) {
             $req[] = 'fcg_digital';
         }
+        if (Settings::get('checkbox_age') === 'yes' && $this->cartMaxMinAge() > 0) {
+            $req[] = 'fcg_age';
+        }
         return $req;
+    }
+
+    /** Höchstes Mindestalter (_fcg_min_age) der Produkte im Warenkorb; 0 wenn keins. */
+    public function cartMaxMinAge()
+    {
+        $cart = $this->cart();
+        if (!$cart || empty($cart->cart_data) || !is_array($cart->cart_data)) {
+            return 0;
+        }
+        $max = 0;
+        foreach ($cart->cart_data as $item) {
+            $pid = is_array($item) ? ($item['post_id'] ?? 0) : (is_object($item) && isset($item->post_id) ? $item->post_id : 0);
+            if (!$pid) {
+                continue;
+            }
+            $age = (int) get_post_meta((int) $pid, '_fcg_min_age', true);
+            if ($age > $max) {
+                $max = $age;
+            }
+        }
+        return $max;
     }
 
     /** @return array{has_physical:bool,has_digital:bool} */

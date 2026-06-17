@@ -103,6 +103,16 @@ class Checkout
         if (Settings::get('checkbox_digital') === 'yes' && $comp['has_digital']) {
             $defs['fcg_digital'] = __('Bei digitalen Inhalten: Ich stimme der sofortigen Ausführung zu und weiß, dass mein Widerrufsrecht damit erlischt.', 'fluentcart-germanized');
         }
+        // Mindestalter nur wenn ein Artikel im Warenkorb es erfordert
+        $consent = new Consent();
+        $minAge = $consent->cartMaxMinAge();
+        if (Settings::get('checkbox_age') === 'yes' && $minAge > 0) {
+            $defs['fcg_age'] = sprintf(
+                /* translators: %d minimum age */
+                __('Ich bestätige, dass ich mindestens %d Jahre alt bin.', 'fluentcart-germanized'),
+                $minAge
+            );
+        }
 
         return $defs;
     }
