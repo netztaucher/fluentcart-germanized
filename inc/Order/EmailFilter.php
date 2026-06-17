@@ -45,9 +45,9 @@ class EmailFilter
             return $args;
         }
 
-        // Erkennung Bestellbestätigung – per Filter überschreibbar/anpassbar.
-        $isOrder = apply_filters('fcg/email_is_order_confirmation', $this->looksLikeOrder($args), $args);
-        if (!$isOrder) {
+        // Nur FluentCart-Mails (Marker im Body) – verhindert Anhängen an fremde Mails.
+        $isFluentCart = apply_filters('fcg/email_is_fluentcart', $this->looksLikeFluentCart($args), $args);
+        if (!$isFluentCart) {
             return $args;
         }
 
@@ -64,14 +64,15 @@ class EmailFilter
         return $args;
     }
 
-    private function looksLikeOrder($args)
+    private function looksLikeFluentCart($args)
     {
-        $subject = isset($args['subject']) ? (string) $args['subject'] : '';
-        $needles = ['bestell', 'order', 'rechnung', 'invoice', 'kauf'];
-        foreach ($needles as $n) {
-            if (stripos($subject, $n) !== false) {
-                return true;
-            }
+        $msg = isset($args['message']) ? (string) $args['message'] : '';
+        // FluentCart-Mails enthalten den "Powered by FluentCart"-Footer bzw. fluentcart.com-Link.
+        if (stripos($msg, 'fluentcart.com') !== false) {
+            return true;
+        }
+        if (stripos($msg, 'data-fluent') !== false || stripos($msg, 'fct-email') !== false) {
+            return true;
         }
         return false;
     }

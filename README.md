@@ -20,8 +20,8 @@ FluentCart bringt eine solide Steuer-Engine mit (EU-VAT, OSS, Steuerklassen, HTM
 | Pro-Produkt DE-Felder | — | `Admin\ProductFields` (eigener Screen, da FluentCart-Admin = Vue) | ✅ aktiv |
 | §19 Kleinunternehmer-Modus | §19 UStG | `Settings` (durchgängig) | ✅ aktiv |
 | Pflicht-Checkboxen (AGB/Widerruf/Datenschutz/Versanddienstleister/Digital-Verzicht) | §312i / §356 BGB / DSGVO | `Frontend\Checkout` + `Order\Consent` | ✅ JS-Injektion + cart-abhängig + **server-seitiges Enforcement** (Cookie → `validate_before_process`) + Protokoll in Order-Meta |
-| Rechtstexte in Bestätigungsmail | §312i BGB | `Order\EmailFilter` | 🟡 default **aus** – Mail-Erkennung live prüfen |
-| Rechnung: fortl. Nr. + §14/§19 | §14/§19 UStG | `Order\InvoiceFilter` | 🟡 Nr.-Vergabe aktiv; Template-Injektion default **aus** |
+| Rechtstexte in Bestätigungsmail | §312i BGB | `Order\EmailFilter` | ✅ default an; hängt USt-Hinweis + Rechtstext-Links an FluentCart-Mails (Marker-Erkennung „fluentcart.com") |
+| Rechnung: fortl. Nr. + §14/§19 | §14/§19 UStG | `Order\InvoiceFilter` | ✅ Nr. ist nativ fortlaufend (`invoice_no`); §19-Hinweis + Rechnungsnotiz via `do_shortcode_tag` an `[fluent_cart_receipt]` |
 
 ## Installation
 

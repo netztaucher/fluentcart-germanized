@@ -48,7 +48,7 @@ class Settings
             'withdrawal_button_footer' => 'yes',
 
             // Erweitert
-            'email_legal_inject'   => 'no',
+            'email_legal_inject'   => 'yes',
             'invoice_enhance'      => 'yes',
             'invoice_note'         => '',
         ];
