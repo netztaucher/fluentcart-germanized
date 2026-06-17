@@ -46,6 +46,8 @@ class Settings
             'page_widerrufsformular' => 0,
 
             'withdrawal_button_footer' => 'yes',
+            'withdrawal_window_days'   => '14',
+            'withdrawal_email'         => '', // Fallback: admin_email
 
             // Erweitert
             'email_legal_inject'   => 'yes',
@@ -205,6 +207,8 @@ class Settings
                     <tr><th><?php esc_html_e('Checkbox Versanddienstleister', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_shipping_data', $s['checkbox_shipping_data']); ?> <p class="description"><?php esc_html_e('Einwilligung zur Datenübergabe an den Versanddienstleister (z.B. DHL).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Standard-Lieferzeit', 'fluentcart-germanized'); ?></th><td><?php echo $text('default_delivery_time', $s['default_delivery_time']); ?></td></tr>
                     <tr><th><?php esc_html_e('Widerrufsbutton im Footer', 'fluentcart-germanized'); ?></th><td><?php echo $check('withdrawal_button_footer', $s['withdrawal_button_footer']); ?> <p class="description"><?php esc_html_e('„Vertrag widerrufen"-Button (§356a) site-weit im Footer anzeigen.', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Widerrufsfrist (Tage)', 'fluentcart-germanized'); ?></th><td><?php echo $text('withdrawal_window_days', $s['withdrawal_window_days']); ?> <p class="description"><?php esc_html_e('Nur Bestellungen innerhalb dieser Frist erscheinen mit 1-Klick-Widerruf.', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Widerruf-Empfänger E-Mail', 'fluentcart-germanized'); ?></th><td><?php echo $text('withdrawal_email', $s['withdrawal_email']); ?> <p class="description"><?php esc_html_e('Leer = Admin-E-Mail. Versand über FluentSMTP (wp_mail).', 'fluentcart-germanized'); ?></p></td></tr>
                 </table>
 
                 <h2><?php esc_html_e('Rechtstext-Seiten', 'fluentcart-germanized'); ?></h2>
