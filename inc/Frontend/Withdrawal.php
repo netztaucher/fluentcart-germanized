@@ -34,16 +34,47 @@ class Withdrawal
         add_action('wp_ajax_fcg_withdraw_order', [$this, 'ajaxWithdrawOrder']);
 
         if (Settings::get('withdrawal_button_footer') === 'yes') {
-            add_action('wp_footer', [$this, 'footerButton'], 50);
+            // Enfold-Footer-Copyright: „Vertrag widerrufen" als Textlink anhängen.
+            add_filter('avf_copyright_info', [$this, 'copyrightLink'], 20);
+            // Generischer Fallback (Nicht-Enfold-Themes): Footer-Menü-Location.
+            add_filter('wp_nav_menu_items', [$this, 'footerMenuLink'], 20, 2);
         }
         add_action('wp_enqueue_scripts', [$this, 'assets']);
+    }
+
+    /** Enfold-Copyright-Zeile: Textlink anhängen. */
+    public function copyrightLink($copyright)
+    {
+        $url = $this->formUrl();
+        if (!$url) {
+            return $copyright;
+        }
+        return $copyright . ' • <a href="' . esc_url($url) . '">' . esc_html__('Vertrag widerrufen', 'fluentcart-germanized') . '</a>';
+    }
+
+    /** Fallback für Themes mit echtem Footer-Menü (Location enthält "footer"/"socket"/avia3). */
+    public function footerMenuLink($items, $args)
+    {
+        $loc = isset($args->theme_location) ? (string) $args->theme_location : '';
+        if ($loc !== 'avia3' && stripos($loc, 'footer') === false && stripos($loc, 'socket') === false) {
+            return $items;
+        }
+        $url = $this->formUrl();
+        if (!$url) {
+            return $items;
+        }
+        return $items . '<li class="menu-item fcg-menu-widerruf"><a href="' . esc_url($url) . '">' . esc_html__('Vertrag widerrufen', 'fluentcart-germanized') . '</a></li>';
+    }
+
+    private function formUrl()
+    {
+        $pid = (int) Settings::get('page_widerrufsformular');
+        return ($pid && get_post_status($pid) === 'publish') ? get_permalink($pid) : '';
     }
 
     public function assets()
     {
         $css = '.fcg-widerruf-button{display:inline-block;padding:8px 16px;border:1px solid currentColor;border-radius:6px;text-decoration:none;font-size:14px;line-height:1.2}'
-            . '.fcg-widerruf-footer{position:fixed;right:14px;bottom:14px;z-index:9998;background:#fff;border:1px solid #d6dae1;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:6px 10px;font-size:13px}'
-            . '.fcg-widerruf-footer a{text-decoration:none;color:#2F3448}'
             . '.fcg-orders{margin:0 0 24px;border-collapse:collapse;width:100%}'
             . '.fcg-orders th,.fcg-orders td{text-align:left;padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:14px;vertical-align:middle}'
             . '.fcg-orders .fcg-do-withdraw{cursor:pointer;padding:6px 12px;border:0;border-radius:6px;background:#253241;color:#fff;font-size:13px}'
@@ -69,16 +100,6 @@ class Withdrawal
             $url = ($pid && get_post_status($pid) === 'publish') ? get_permalink($pid) : '#fcg-widerruf';
         }
         return '<a class="fcg-widerruf-button" href="' . esc_url($url) . '">' . esc_html($atts['text']) . '</a>';
-    }
-
-    public function footerButton()
-    {
-        $pid = (int) Settings::get('page_widerrufsformular');
-        $url = ($pid && get_post_status($pid) === 'publish') ? get_permalink($pid) : '';
-        if (!$url) {
-            return;
-        }
-        echo '<div class="fcg-widerruf-footer">↩ <a href="' . esc_url($url) . '">' . esc_html__('Vertrag widerrufen', 'fluentcart-germanized') . '</a></div>';
     }
 
     /* ---------- Frontend-Ausgabe ---------- */
