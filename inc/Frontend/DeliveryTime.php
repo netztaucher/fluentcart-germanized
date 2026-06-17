@@ -3,6 +3,7 @@
 namespace FluentCartGermanized\Frontend;
 
 use FluentCartGermanized\Settings;
+use FluentCartGermanized\ProductHelper;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -34,6 +35,11 @@ class DeliveryTime
             return;
         }
         $this->printed[$key] = true;
+
+        // Lieferzeit nur für physische Artikel (digitale Downloads: keine Lieferzeit)
+        if (!ProductHelper::isPhysical($product)) {
+            return;
+        }
 
         $text = get_post_meta($product->ID, '_fcg_delivery_time', true);
         if (!$text) {

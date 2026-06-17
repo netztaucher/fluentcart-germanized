@@ -3,6 +3,7 @@
 namespace FluentCartGermanized\Frontend;
 
 use FluentCartGermanized\Settings;
+use FluentCartGermanized\ProductHelper;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -28,7 +29,14 @@ class PriceLabels
 
     public function assets()
     {
-        $css = '.fcg-price-note{display:block;font-size:.8em;line-height:1.3;opacity:.85;margin-top:2px}.fcg-price-note a{text-decoration:underline}';
+        // Hohe Spezifität (Klassen-Repetition) schlägt fremde Sticker-Regeln wie
+        // ".fct-price-range .fct-item-price span{...!important}" – ohne Kopplung an deren Klassen.
+        $sel = 'span.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note';
+        $selB = 'span.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price,span.fcg-delivery-time.fcg-delivery-time.fcg-delivery-time.fcg-delivery-time.fcg-delivery-time';
+        $base = 'display:block!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important;font-size:12px!important;font-weight:400!important;line-height:1.4!important;letter-spacing:normal!important;text-transform:none!important;color:#666!important;opacity:1!important;margin-top:6px!important';
+        $css = $sel . '{' . $base . '}'
+            . $sel . ' a{text-decoration:underline;color:inherit}'
+            . $selB . '{' . $base . ';margin-top:2px!important}';
         wp_register_style('fcg-frontend', false);
         wp_enqueue_style('fcg-frontend');
         wp_add_inline_style('fcg-frontend', $css);
@@ -63,7 +71,7 @@ class PriceLabels
         }
 
         // 2. Versand-Hinweis nur bei physischen Artikeln
-        if ($this->isPhysical($product)) {
+        if (ProductHelper::isPhysical($product)) {
             $labelTpl    = esc_html(Settings::get('shipping_label')); // z.B. "zzgl. {link}"
             $versandPage = (int) Settings::get('page_versand');
             $linkText    = esc_html(Settings::get('shipping_link_text'));
@@ -79,31 +87,5 @@ class PriceLabels
         $note = apply_filters('fcg/price_note', $note, $product);
 
         return '<span class="fcg-price-note">' . $note . '</span>';
-    }
-
-    /**
-     * Best-effort: ist mindestens eine Variante physisch (fulfillment_type 'physical')?
-     * Im Zweifel false (sicherer für reine Download-Shops – kein falsches „zzgl. Versand").
-     */
-    private function isPhysical($product)
-    {
-        if (!$product) {
-            return false;
-        }
-        try {
-            // FluentCart Product-Model: variants->fulfillment_type
-            if (isset($product->variants) && is_iterable($product->variants)) {
-                foreach ($product->variants as $v) {
-                    $ft = is_object($v) && isset($v->fulfillment_type) ? $v->fulfillment_type : (is_array($v) && isset($v['fulfillment_type']) ? $v['fulfillment_type'] : null);
-                    if ($ft === 'physical') {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        } catch (\Throwable $e) {
-            return false;
-        }
-        return false;
     }
 }

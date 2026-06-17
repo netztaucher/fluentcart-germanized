@@ -35,6 +35,7 @@ class Settings
             'checkbox_privacy'     => 'yes',
             'checkbox_withdrawal'  => 'yes',
             'checkbox_digital'     => 'yes', // nur bei Download-Artikeln
+            'checkbox_shipping_data' => 'yes', // Datenübergabe an Versanddienstleister
 
             // Seiten-IDs für Rechtstexte (vom Anwalt befüllt)
             'page_impressum'       => 0,
@@ -43,6 +44,8 @@ class Settings
             'page_datenschutz'     => 0,
             'page_versand'         => 0,
             'page_widerrufsformular' => 0,
+
+            'withdrawal_button_footer' => 'yes',
 
             // Erweitert (live zu verifizieren, daher default aus)
             'email_legal_inject'   => 'no',
@@ -161,6 +164,18 @@ class Settings
         <div class="wrap">
             <h1><?php esc_html_e('FluentCart Germanized', 'fluentcart-germanized'); ?></h1>
             <p style="max-width:760px"><em><?php esc_html_e('Haftungsausschluss: Dieses Plugin schafft die technischen Voraussetzungen für Rechtssicherheit. Rechtstexte und Konfiguration müssen vom Betreiber/Anwalt geprüft werden. Keine Rechtsberatung.', 'fluentcart-germanized'); ?></em></p>
+
+            <?php if (isset($_GET['fcg_pages'])): ?>
+                <div class="notice notice-success is-dismissible"><p><?php printf(esc_html__('%d fehlende Seite(n) angelegt/verknüpft.', 'fluentcart-germanized'), (int) $_GET['fcg_pages']); ?></p></div>
+            <?php endif; ?>
+
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:10px 0">
+                <input type="hidden" name="action" value="fcg_create_pages">
+                <?php wp_nonce_field('fcg_create_pages'); ?>
+                <button type="submit" class="button"><?php esc_html_e('Fehlende Rechtstext-Seiten anlegen', 'fluentcart-germanized'); ?></button>
+                <span class="description"><?php esc_html_e('Legt Impressum/AGB/Widerruf/Widerrufsformular/Datenschutz/Versand an (mit Shortcodes) und verknüpft sie unten.', 'fluentcart-germanized'); ?></span>
+            </form>
+
             <form method="post" action="options.php">
                 <?php settings_fields('fcg_settings_group'); ?>
 
@@ -182,7 +197,9 @@ class Settings
                     <tr><th><?php esc_html_e('Checkbox Datenschutz', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_privacy', $s['checkbox_privacy']); ?></td></tr>
                     <tr><th><?php esc_html_e('Checkbox Widerrufsrecht', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_withdrawal', $s['checkbox_withdrawal']); ?></td></tr>
                     <tr><th><?php esc_html_e('Checkbox Digital-Verzicht', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_digital', $s['checkbox_digital']); ?> <p class="description"><?php esc_html_e('Nur nötig bei Download-Artikeln (Verzicht auf Widerrufsrecht).', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Checkbox Versanddienstleister', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_shipping_data', $s['checkbox_shipping_data']); ?> <p class="description"><?php esc_html_e('Einwilligung zur Datenübergabe an den Versanddienstleister (z.B. DHL).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Standard-Lieferzeit', 'fluentcart-germanized'); ?></th><td><?php echo $text('default_delivery_time', $s['default_delivery_time']); ?></td></tr>
+                    <tr><th><?php esc_html_e('Widerrufsbutton im Footer', 'fluentcart-germanized'); ?></th><td><?php echo $check('withdrawal_button_footer', $s['withdrawal_button_footer']); ?> <p class="description"><?php esc_html_e('„Vertrag widerrufen"-Button (§356a) site-weit im Footer anzeigen.', 'fluentcart-germanized'); ?></p></td></tr>
                 </table>
 
                 <h2><?php esc_html_e('Rechtstext-Seiten', 'fluentcart-germanized'); ?></h2>

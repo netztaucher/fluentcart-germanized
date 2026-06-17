@@ -41,6 +41,15 @@ spl_autoload_register(function ($class) {
 });
 
 /**
+ * Aktivierung: fehlende Rechtstext-Seiten anlegen.
+ */
+register_activation_hook(__FILE__, function () {
+    require_once FCG_DIR . 'inc/Settings.php';
+    require_once FCG_DIR . 'inc/Installer.php';
+    \FluentCartGermanized\Installer::activate();
+});
+
+/**
  * Bootstrap nach dem Laden aller Plugins – erst dann steht fest, ob FluentCart aktiv ist.
  */
 add_action('plugins_loaded', function () {

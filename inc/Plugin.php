@@ -35,6 +35,20 @@ class Plugin
         // Settings + Admin
         (new Settings())->register();
 
+        // Einmaliger Seiten-Install (falls Plugin schon aktiv war) + manueller Button
+        if (is_admin()) {
+            add_action('admin_init', ['\\FluentCartGermanized\\Installer', 'maybeInstall']);
+            add_action('admin_post_fcg_create_pages', function () {
+                if (!current_user_can('manage_options')) {
+                    wp_die('');
+                }
+                check_admin_referer('fcg_create_pages');
+                $created = \FluentCartGermanized\Installer::createMissingPages();
+                wp_safe_redirect(add_query_arg('fcg_pages', count($created), admin_url('admin.php?page=fcg-settings')));
+                exit;
+            });
+        }
+
         // Frontend-Compliance (PAngV / §312j)
         (new \FluentCartGermanized\Frontend\PriceLabels())->register();
         (new \FluentCartGermanized\Frontend\BasePrice())->register();
