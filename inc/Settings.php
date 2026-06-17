@@ -43,6 +43,11 @@ class Settings
             'page_datenschutz'     => 0,
             'page_versand'         => 0,
             'page_widerrufsformular' => 0,
+
+            // Erweitert (live zu verifizieren, daher default aus)
+            'email_legal_inject'   => 'no',
+            'invoice_enhance'      => 'no',
+            'invoice_number_prefix' => 'RE-',
         ];
     }
 
@@ -188,6 +193,13 @@ class Settings
                     <tr><th><?php esc_html_e('Widerrufsformular', 'fluentcart-germanized'); ?></th><td><?php echo $pageSelect('page_widerrufsformular', $s['page_widerrufsformular']); ?></td></tr>
                     <tr><th><?php esc_html_e('Datenschutz', 'fluentcart-germanized'); ?></th><td><?php echo $pageSelect('page_datenschutz', $s['page_datenschutz']); ?></td></tr>
                     <tr><th><?php esc_html_e('Versandkosten', 'fluentcart-germanized'); ?></th><td><?php echo $pageSelect('page_versand', $s['page_versand']); ?></td></tr>
+                </table>
+
+                <h2><?php esc_html_e('Erweitert (live verifizieren)', 'fluentcart-germanized'); ?></h2>
+                <table class="form-table">
+                    <tr><th><?php esc_html_e('Rechtstexte in Bestätigungsmail', 'fluentcart-germanized'); ?></th><td><?php echo $check('email_legal_inject', $s['email_legal_inject']); ?> <p class="description"><?php esc_html_e('Hängt USt-Hinweis + Rechtstext-Links an Bestell-Mails. Vorher Mail-Erkennung prüfen.', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Rechnung erweitern', 'fluentcart-germanized'); ?></th><td><?php echo $check('invoice_enhance', $s['invoice_enhance']); ?> <p class="description"><?php esc_html_e('Fortlaufende Nr. + §19-Hinweis in FluentCart-Rechnung (Template-Hook live prüfen).', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Rechnungsnummer-Präfix', 'fluentcart-germanized'); ?></th><td><?php echo $text('invoice_number_prefix', $s['invoice_number_prefix']); ?></td></tr>
                 </table>
 
                 <?php submit_button(); ?>

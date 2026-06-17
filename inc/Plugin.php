@@ -35,18 +35,23 @@ class Plugin
         // Settings + Admin
         (new Settings())->register();
 
-        // Frontend-Compliance
+        // Frontend-Compliance (PAngV / §312j)
         (new \FluentCartGermanized\Frontend\PriceLabels())->register();
+        (new \FluentCartGermanized\Frontend\BasePrice())->register();
+        (new \FluentCartGermanized\Frontend\DeliveryTime())->register();
         (new \FluentCartGermanized\Frontend\Checkout())->register();
+        (new \FluentCartGermanized\Frontend\Withdrawal())->register();
 
         // Rechtstext-Verlinkung
         (new \FluentCartGermanized\Legal\Pages())->register();
 
-        // Folge-Iterationen (nach Live-Verifikation der jeweiligen Hooks):
-        //  - Order\EmailFilter   (Widerrufsbelehrung + USt-Hinweis in Bestätigungsmail)
-        //  - Order\InvoiceFilter (fortl. Rechnungsnr. + §14/§19)
-        //  - Frontend\Checkout: Pflicht-Checkboxen im Vue-Checkout
-        //  - Frontend\BasePrice / DeliveryTime + Admin\ProductFields
-        //  - Frontend\Withdrawal (Widerrufsformular + Widerrufsbutton §356a)
+        // Pro-Produkt-Felder (eigener Admin-Screen, da FluentCart-Admin = Vue-SPA)
+        if (is_admin()) {
+            (new \FluentCartGermanized\Admin\ProductFields())->register();
+        }
+
+        // Order-Compliance (default-schonend; Feinschliff der Hooks live verifizieren)
+        (new \FluentCartGermanized\Order\EmailFilter())->register();
+        (new \FluentCartGermanized\Order\InvoiceFilter())->register();
     }
 }
