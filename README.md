@@ -1,6 +1,12 @@
+<p align="center">
+  <img src=".github/banner.jpg" alt="FluentCart Germanized – EU-Rechtssicherheit" width="100%">
+</p>
+
 # FluentCart Germanized
 
 Macht [FluentCart](https://fluentcart.com/) rechtssicher für den **deutschen Markt** – analog zu *WooCommerce Germanized* für WooCommerce. Reines **Companion-Plugin**: hängt sich nur per Hooks an FluentCart, ändert keine FluentCart-Originaldateien (update-sicher).
+
+> 🔵 **[netztaucher | digital](https://netztaucher.com/wordpress)** — Dienstleister für **WordPress**, **WooCommerce** und **Verkaufen mit WordPress**. Brauchst du Hilfe bei rechtssicherem E-Commerce? → **[netztaucher.com/wordpress](https://netztaucher.com/wordpress)**
 
 > ⚠️ **Haftungsausschluss:** Dieses Plugin schafft die *technischen* Voraussetzungen für Rechtssicherheit. Die finalen Rechtstexte (AGB, Widerrufsbelehrung, Datenschutz, Impressum) und die Konfiguration müssen vom Betreiber bzw. einem Anwalt geprüft werden. **Keine Rechtsberatung.**
 
@@ -49,10 +55,13 @@ fluentcart-germanized.php   Bootstrap, FluentCart-Check, Autoloader
 inc/
   Settings.php              Options-API + Admin-Settingseite
   Plugin.php                zentrale Hook-Registrierung
-  Frontend/  PriceLabels · BasePrice · DeliveryTime · Checkout · Withdrawal
+  Installer.php             Auto-Anlage der Rechtstext-Seiten
+  LegalText.php             amtliche Muster (Anlage 1/2 EGBGB)
+  ProductHelper.php         physisch/digital-Erkennung
+  Frontend/  PriceLabels · BasePrice · OmnibusPrice · DeliveryTime · Checkout · Withdrawal · Gpsr
   Admin/     ProductFields  (eigener Screen für post_meta)
-  Order/     EmailFilter · InvoiceFilter
-  Legal/     Pages
+  Order/     Consent · InvoiceFilter · EmailFilter
+  Legal/     Pages · Texts
 ```
 
 Pro-Produkt-Daten als `post_meta` auf CPT `fluent-products` (`_fcg_unit`, `_fcg_unit_base`, `_fcg_unit_product`, `_fcg_delivery_time`, `_fcg_min_age`, `_fcg_is_digital`).
@@ -65,8 +74,20 @@ Pro-Produkt-Daten als `post_meta` auf CPT `fluent-products` (`_fcg_unit`, `_fcg_
 - Widerrufsformular sendet Mail an Shop + Eingangsbestätigung an Kunde.
 - Vor Aktivierung der „Erweitert"-Optionen (Mail/Rechnung): Hooks gegen die laufende FluentCart-Version prüfen.
 
-## Bekannte offene Punkte
+## Bewusst nicht abgedeckt (Phase C / situativ)
 
-- **Vue-Checkout:** Button-Text via `gettext` bestätigt; Pflicht-Checkboxen brauchen Injektion ins FluentCart-Checkout-Feldschema (`fluent_cart/checkout_billing_fields`) + DOM-Verifikation des Modal-Checkouts.
-- **Widerrufsbutton §356a:** Pflicht-Termin (~19.06.2026) + genaue Anforderungen anwaltlich bestätigen.
-- **Rechnung:** Template-Hook für Einblendung der Nummer/§19 live verifizieren (`fluent_cart/invoice/footer_note` ist eine Annahme).
+- **PDF-Rechnung / ZUGFeRD / XRechnung** (B2B-E-Rechnung) – für reinen B2C nicht erforderlich.
+- **Buchhaltungs-Export** (lexoffice/sevDesk/DATEV).
+- **Versandlabel / Tracking** (DHL).
+- **VIES B2B Reverse-Charge**-Hinweis.
+- **Pfand / LMIV / ElektroG / BattG** – produktabhängig.
+
+Details: [docs/GAP-UND-PLAN.md](docs/GAP-UND-PLAN.md) · [docs/GAP-UPDATE-UND-FLUENTCRM-EU.md](docs/GAP-UPDATE-UND-FLUENTCRM-EU.md)
+
+---
+
+## Über / Support
+
+Entwickelt von **[netztaucher | digital](https://netztaucher.com/wordpress)** — deinem Dienstleister für **WordPress**, **WooCommerce** und **Verkaufen mit WordPress**.
+
+👉 **[netztaucher.com/wordpress](https://netztaucher.com/wordpress)**
