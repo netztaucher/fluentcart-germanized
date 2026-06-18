@@ -27,7 +27,6 @@ class Texts
             'widerruf'         => [__('Widerrufsbelehrung', 'fluentcart-germanized'), 'fcg_widerrufsbelehrung', true],
             'widerrufsformular' => [__('Widerrufsformular (Text)', 'fluentcart-germanized'), 'fcg_widerrufsformular_text', true],
             'agb'              => [__('AGB', 'fluentcart-germanized'), 'fcg_agb', false],
-            'datenschutz'      => [__('Datenschutzerklärung', 'fluentcart-germanized'), 'fcg_datenschutz', false],
             'versand'          => [__('Versand & Zahlung', 'fluentcart-germanized'), 'fcg_versand', false],
         ];
     }

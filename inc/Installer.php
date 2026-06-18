@@ -28,7 +28,7 @@ class Installer
             'page_datenschutz' => [
                 'datenschutz',
                 __('Datenschutzerklärung', 'fluentcart-germanized'),
-                '<!-- wp:shortcode -->[fcg_datenschutz]<!-- /wp:shortcode -->',
+                '<!-- wp:paragraph --><p>' . esc_html__('Hier Ihre Datenschutzerklärung (DSGVO) einfügen.', 'fluentcart-germanized') . '</p><!-- /wp:paragraph -->' . $disclaimer,
             ],
             'page_agb' => [
                 'agb',
