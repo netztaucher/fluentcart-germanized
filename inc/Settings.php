@@ -29,6 +29,7 @@ class Settings
             'shipping_link_text'   => 'Versand',
             'order_button_text'    => 'Zahlungspflichtig bestellen',
             'default_delivery_time' => 'Lieferzeit 2–4 Werktage',
+            'delivery_in_note'      => 'no', // Lieferzeit an der Preis-Note anzeigen
 
             // Pflicht-Checkboxen am Checkout aktivieren
             'checkbox_terms'       => 'yes',
@@ -215,6 +216,7 @@ class Settings
                     <tr><th><?php esc_html_e('Checkbox Digital-Verzicht', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_digital', $s['checkbox_digital']); ?> <p class="description"><?php esc_html_e('Nur nötig bei Download-Artikeln (Verzicht auf Widerrufsrecht).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Checkbox Versanddienstleister', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_shipping_data', $s['checkbox_shipping_data']); ?> <p class="description"><?php esc_html_e('Einwilligung zur Datenübergabe an den Versanddienstleister (z.B. DHL).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Checkbox Altersbestätigung', 'fluentcart-germanized'); ?></th><td><?php echo $check('checkbox_age', $s['checkbox_age']); ?> <p class="description"><?php esc_html_e('Erscheint nur, wenn ein Artikel im Warenkorb ein Mindestalter hat.', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Lieferzeit an der Preis-Note', 'fluentcart-germanized'); ?></th><td><?php echo $check('delivery_in_note', $s['delivery_in_note']); ?> <p class="description"><?php esc_html_e('Aus: nur „zzgl. Versand"-Link am Preis (Lieferzeit steht auf der Versandseite).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Standard-Lieferzeit', 'fluentcart-germanized'); ?></th><td><?php echo $text('default_delivery_time', $s['default_delivery_time']); ?></td></tr>
                     <tr><th><?php esc_html_e('Widerruf-Link im Footer', 'fluentcart-germanized'); ?></th><td><?php echo $check('withdrawal_button_footer', $s['withdrawal_button_footer']); ?> <p class="description"><?php esc_html_e('„Vertrag widerrufen" als Textlink in der Footer-/Copyright-Zeile (§356a).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Widerrufsfrist (Tage)', 'fluentcart-germanized'); ?></th><td><?php echo $text('withdrawal_window_days', $s['withdrawal_window_days']); ?> <p class="description"><?php esc_html_e('Nur Bestellungen innerhalb dieser Frist erscheinen mit 1-Klick-Widerruf.', 'fluentcart-germanized'); ?></p></td></tr>

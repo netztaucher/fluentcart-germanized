@@ -23,6 +23,9 @@ class DeliveryTime
 
     public function appendToNote($note, $product)
     {
+        if (Settings::get('delivery_in_note') !== 'yes') {
+            return $note; // Lieferzeit am Preis aus (Info steht auf der verlinkten Versandseite)
+        }
         if (!ProductHelper::isPhysical($product)) {
             return $note;
         }
