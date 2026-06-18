@@ -26,7 +26,7 @@ class Settings
             'price_tax_label'      => 'inkl. MwSt.',
             'price_kleinunt_label' => 'keine USt. gem. §19 UStG',
             'shipping_label'       => 'zzgl. {link}',
-            'shipping_link_text'   => 'Versandkosten',
+            'shipping_link_text'   => 'Versand',
             'order_button_text'    => 'Zahlungspflichtig bestellen',
             'default_delivery_time' => 'Lieferzeit 2–4 Werktage',
 

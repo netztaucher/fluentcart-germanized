@@ -10,46 +10,36 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Lieferzeit-Anzeige (Art. 246a EGBGB).
- * Pro-Produkt-Meta _fcg_delivery_time, sonst Standard aus Settings.
- * Nur für physische Artikel sinnvoll – bei reinen Downloads unterdrückbar via Filter.
+ * Lieferzeit (Art. 246a EGBGB).
+ * Wird an die Preis-Note angehängt (eine Zeile: „… • 3 Tage"), statt separatem Block.
+ * Pro-Produkt-Meta _fcg_delivery_time, sonst Standard aus Settings. Nur physische Artikel.
  */
 class DeliveryTime
 {
-    private $printed = [];
-
     public function register()
     {
-        add_action('fluent_cart/product/after_price', [$this, 'render'], 11, 1);
+        add_filter('fcg/price_note', [$this, 'appendToNote'], 10, 2);
     }
 
-    public function render($data = [])
+    public function appendToNote($note, $product)
     {
-        $product = is_array($data) && isset($data['product']) ? $data['product'] : null;
-        if (!$product || !isset($product->ID)) {
-            return;
-        }
-        $scope = is_array($data) && isset($data['scope']) ? $data['scope'] : 'default';
-        $key = $product->ID . ':' . $scope;
-        if (isset($this->printed[$key])) {
-            return;
-        }
-        $this->printed[$key] = true;
-
-        // Lieferzeit nur für physische Artikel (digitale Downloads: keine Lieferzeit)
         if (!ProductHelper::isPhysical($product)) {
-            return;
+            return $note;
         }
 
-        $text = get_post_meta($product->ID, '_fcg_delivery_time', true);
+        $text = '';
+        if ($product && isset($product->ID)) {
+            $text = (string) get_post_meta($product->ID, '_fcg_delivery_time', true);
+        }
         if (!$text) {
             $text = (string) Settings::get('default_delivery_time');
         }
         $text = apply_filters('fcg/delivery_time_text', $text, $product);
         if (!$text) {
-            return;
+            return $note;
         }
 
-        echo '<span class="fcg-delivery-time">' . esc_html($text) . '</span>';
+        $sep = '<span class="fcg-sep"> • </span>';
+        return $note . $sep . '<span class="fcg-delivery-time">' . esc_html($text) . '</span>';
     }
 }

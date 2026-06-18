@@ -31,12 +31,14 @@ class PriceLabels
     {
         // Hohe Spezifität (Klassen-Repetition) schlägt fremde Sticker-Regeln wie
         // ".fct-price-range .fct-item-price span{...!important}" – ohne Kopplung an deren Klassen.
-        $sel = 'span.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note';
-        $selB = 'span.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price,span.fcg-delivery-time.fcg-delivery-time.fcg-delivery-time.fcg-delivery-time.fcg-delivery-time';
-        $base = 'display:block!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important;font-size:12px!important;font-weight:400!important;line-height:1.4!important;letter-spacing:normal!important;text-transform:none!important;color:#666!important;opacity:1!important;margin-top:6px!important';
-        $css = $sel . '{' . $base . '}'
+        // Preis-Note = eine Zeile unter dem Preis (enthält MwSt + Versand + Lieferzeit).
+        // Grundpreis eigene Zeile darüber/darunter.
+        $sel  = 'span.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note';
+        $selBase = 'span.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price';
+        $f = 'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important;font-size:12px!important;font-weight:400!important;line-height:1.4!important;letter-spacing:normal!important;text-transform:none!important;color:#666!important;opacity:1!important';
+        $css = $sel . ',' . $selBase . '{display:block!important;margin-top:4px!important;' . $f . '}'
             . $sel . ' a{text-decoration:underline;color:inherit}'
-            . $selB . '{' . $base . ';margin-top:2px!important}';
+            . $sel . ' .fcg-delivery-time,' . $sel . ' .fcg-sep{font-size:inherit;color:inherit}';
         wp_register_style('fcg-frontend', false);
         wp_enqueue_style('fcg-frontend');
         wp_add_inline_style('fcg-frontend', $css);
