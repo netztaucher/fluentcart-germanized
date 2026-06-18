@@ -50,6 +50,9 @@ class Settings
             'withdrawal_window_days'   => '14',
             'withdrawal_email'         => '', // Fallback: admin_email
 
+            // Unternehmer-Angaben für Mustertexte (Widerrufsbelehrung/-formular)
+            'seller_block'         => '',
+
             // GPSR (Produktsicherheit) – globale Defaults, pro Produkt überschreibbar
             'gpsr_manufacturer'         => '',
             'gpsr_manufacturer_address' => '',
@@ -144,7 +147,7 @@ class Settings
                 $clean[$key] = in_array($input[$key], ['regular', 'kleinunternehmer'], true) ? $input[$key] : 'regular';
             } elseif ($isToggle) {
                 $clean[$key] = $input[$key] === 'yes' ? 'yes' : 'no';
-            } elseif (in_array($key, ['invoice_note', 'gpsr_manufacturer_address', 'gpsr_eu_rep'], true)) {
+            } elseif (in_array($key, ['invoice_note', 'gpsr_manufacturer_address', 'gpsr_eu_rep', 'seller_block'], true)) {
                 $clean[$key] = sanitize_textarea_field($input[$key]);
             } else {
                 $clean[$key] = sanitize_text_field($input[$key]);
@@ -216,6 +219,7 @@ class Settings
                     <tr><th><?php esc_html_e('Widerruf-Link im Footer', 'fluentcart-germanized'); ?></th><td><?php echo $check('withdrawal_button_footer', $s['withdrawal_button_footer']); ?> <p class="description"><?php esc_html_e('„Vertrag widerrufen" als Textlink in der Footer-/Copyright-Zeile (§356a).', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Widerrufsfrist (Tage)', 'fluentcart-germanized'); ?></th><td><?php echo $text('withdrawal_window_days', $s['withdrawal_window_days']); ?> <p class="description"><?php esc_html_e('Nur Bestellungen innerhalb dieser Frist erscheinen mit 1-Klick-Widerruf.', 'fluentcart-germanized'); ?></p></td></tr>
                     <tr><th><?php esc_html_e('Widerruf-Empfänger E-Mail', 'fluentcart-germanized'); ?></th><td><?php echo $text('withdrawal_email', $s['withdrawal_email']); ?> <p class="description"><?php esc_html_e('Leer = Admin-E-Mail. Versand über FluentSMTP (wp_mail).', 'fluentcart-germanized'); ?></p></td></tr>
+                    <tr><th><?php esc_html_e('Unternehmer-Angaben (Mustertext)', 'fluentcart-germanized'); ?></th><td><textarea name="<?php echo esc_attr(self::OPTION); ?>[seller_block]" rows="4" class="large-text" placeholder="Firma&#10;Straße Nr.&#10;PLZ Ort&#10;Telefon&#10;E-Mail"><?php echo esc_textarea($s['seller_block']); ?></textarea><p class="description"><?php esc_html_e('Wird in die Muster-Widerrufsbelehrung/-formular (Anlage 1/2 EGBGB) eingesetzt.', 'fluentcart-germanized'); ?></p></td></tr>
                 </table>
 
                 <h2><?php esc_html_e('Rechtstext-Seiten', 'fluentcart-germanized'); ?></h2>

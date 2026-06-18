@@ -38,13 +38,14 @@ class Installer
             'page_widerruf' => [
                 'widerrufsbelehrung',
                 __('Widerrufsbelehrung', 'fluentcart-germanized'),
-                '<!-- wp:paragraph --><p>' . esc_html__('Hier die Muster-Widerrufsbelehrung (Anlage 1 zu Art. 246a EGBGB) einfügen.', 'fluentcart-germanized') . '</p><!-- /wp:paragraph -->'
+                '<!-- wp:shortcode -->[fcg_widerrufsbelehrung]<!-- /wp:shortcode -->'
                     . '<!-- wp:shortcode -->[fcg_widerrufsbutton]<!-- /wp:shortcode -->' . $disclaimer,
             ],
             'page_widerrufsformular' => [
                 'widerrufsformular',
                 __('Widerrufsformular', 'fluentcart-germanized'),
-                '<!-- wp:shortcode -->[fcg_widerrufsformular]<!-- /wp:shortcode -->',
+                '<!-- wp:shortcode -->[fcg_widerrufsformular_text]<!-- /wp:shortcode -->'
+                    . '<!-- wp:shortcode -->[fcg_widerrufsformular]<!-- /wp:shortcode -->',
             ],
             'page_versand' => [
                 'versand-und-zahlung',

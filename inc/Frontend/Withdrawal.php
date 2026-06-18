@@ -29,6 +29,12 @@ class Withdrawal
     {
         add_shortcode('fcg_widerrufsformular', [$this, 'formShortcode']);
         add_shortcode('fcg_widerrufsbutton', [$this, 'buttonShortcode']);
+        add_shortcode('fcg_widerrufsbelehrung', function () {
+            return \FluentCartGermanized\LegalText::widerrufsbelehrung();
+        });
+        add_shortcode('fcg_widerrufsformular_text', function () {
+            return \FluentCartGermanized\LegalText::widerrufsformularText();
+        });
 
         add_action('admin_post_nopriv_fcg_widerruf', [$this, 'handleSubmit']);
         add_action('admin_post_fcg_widerruf', [$this, 'handleSubmit']);
