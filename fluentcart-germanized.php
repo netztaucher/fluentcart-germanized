@@ -3,7 +3,7 @@
  * Plugin Name:       FluentCart Germanized
  * Plugin URI:        https://netztaucher.com/
  * Description:        Macht FluentCart rechtssicher für den deutschen Markt (PAngV, Button-Lösung, Pflicht-Checkboxen, Widerruf, §19, Lieferzeit, Grundpreis). Companion-Plugin – ändert FluentCart-Originale nicht.
- * Version:           0.1.0
+ * Version:           1.0.0
  * Requires PHP:      7.4
  * Author:            netztaucher
  * Text Domain:       fluentcart-germanized
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('FCG_VERSION', '0.1.0');
+define('FCG_VERSION', '1.0.0');
 define('FCG_FILE', __FILE__);
 define('FCG_DIR', plugin_dir_path(__FILE__));
 define('FCG_URL', plugin_dir_url(__FILE__));

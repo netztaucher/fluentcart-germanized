@@ -4,6 +4,14 @@ Macht [FluentCart](https://fluentcart.com/) rechtssicher für den **deutschen Ma
 
 > ⚠️ **Haftungsausschluss:** Dieses Plugin schafft die *technischen* Voraussetzungen für Rechtssicherheit. Die finalen Rechtstexte (AGB, Widerrufsbelehrung, Datenschutz, Impressum) und die Konfiguration müssen vom Betreiber bzw. einem Anwalt geprüft werden. **Keine Rechtsberatung.**
 
+## 📄 Wie wird Rechtssicherheit hergestellt?
+
+Das vollständige Paper erklärt pro Rechtsbereich **was** gefordert ist und **wie** das Plugin es technisch löst (Hooks, Module, Mechanik):
+
+➡️ **[docs/RECHTSSICHERHEIT.md](docs/RECHTSSICHERHEIT.md)** — PAngV (inkl. Omnibus & Grundpreis) · Button-Lösung · server-seitig erzwungene Pflicht-Checkboxen + Consent-Log · Widerruf (amtliche Muster, 1-Klick, Admin) · GPSR · Rechnung §14/§19 · Mail-Pflichtinhalte · §19-Modus.
+
+Weiterführend: [Gap-Analyse vs. WooCommerce Germanized](docs/GAP-UND-PLAN.md) · [Gap-Update + FluentCRM-EU-Einschätzung](docs/GAP-UPDATE-UND-FLUENTCRM-EU.md)
+
 ## Status
 
 FluentCart bringt eine solide Steuer-Engine mit (EU-VAT, OSS, Steuerklassen, HTML-Rechnungen) + viele Hooks, aber **keine** DE-spezifische Rechtsebene. Dieses Plugin füllt die Lücke.
