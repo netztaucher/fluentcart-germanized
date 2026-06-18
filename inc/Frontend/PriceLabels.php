@@ -25,6 +25,30 @@ class PriceLabels
     {
         add_action('fluent_cart/product/after_price', [$this, 'renderAfterPrice'], 10, 1);
         add_action('wp_enqueue_scripts', [$this, 'assets']);
+        add_action('wp_footer', [$this, 'moveNoteScript'], 60);
+    }
+
+    /**
+     * Auf der Produkt-Einzelseite sitzt der Preis in einem gestalteten „Sticker"
+     * (.fct-price-range). Die Info-Note würde den Sticker strecken und den Preis
+     * einklemmen. Daher Note + Grundpreis per JS aus dem Sticker heraus direkt
+     * darunter setzen — Sticker bleibt kompakt um den Preis.
+     */
+    public function moveNoteScript()
+    {
+        ?>
+        <script>
+        (function () {
+            document.querySelectorAll('.fct-product-summary .fct-price-range').forEach(function (range) {
+                if (!range.parentNode) { return; }
+                ['.fcg-base-price', '.fcg-price-note'].forEach(function (sel) {
+                    var el = range.querySelector(sel);
+                    if (el) { range.parentNode.insertBefore(el, range.nextSibling); }
+                });
+            });
+        })();
+        </script>
+        <?php
     }
 
     public function assets()
@@ -36,7 +60,7 @@ class PriceLabels
         $sel  = 'span.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note.fcg-price-note';
         $selBase = 'span.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price.fcg-base-price';
         $f = 'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important;font-size:12px!important;font-weight:400!important;line-height:1.4!important;letter-spacing:normal!important;text-transform:none!important;color:#666!important;opacity:1!important';
-        $css = $sel . ',' . $selBase . '{display:block!important;margin-top:4px!important;' . $f . '}'
+        $css = $sel . ',' . $selBase . '{display:block!important;margin-top:0!important;' . $f . '}'
             . $sel . ' a{text-decoration:underline;color:inherit}'
             . $sel . ' .fcg-delivery-time,' . $sel . ' .fcg-sep{font-size:inherit;color:inherit}';
         wp_register_style('fcg-frontend', false);
