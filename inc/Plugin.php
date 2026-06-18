@@ -60,8 +60,9 @@ class Plugin
         (new \FluentCartGermanized\Frontend\Checkout())->register();
         (new \FluentCartGermanized\Frontend\Withdrawal())->register();
 
-        // Rechtstext-Verlinkung
+        // Rechtstext-Verlinkung + zentrale Rechtstext-Verwaltung (Shortcodes + Admin)
         (new \FluentCartGermanized\Legal\Pages())->register();
+        (new \FluentCartGermanized\Legal\Texts())->register();
 
         // Pro-Produkt-Felder (eigener Admin-Screen, da FluentCart-Admin = Vue-SPA)
         if (is_admin()) {

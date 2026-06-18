@@ -28,12 +28,12 @@ class Installer
             'page_datenschutz' => [
                 'datenschutz',
                 __('Datenschutzerklärung', 'fluentcart-germanized'),
-                '<!-- wp:paragraph --><p>' . esc_html__('Hier Ihre Datenschutzerklärung (DSGVO) einfügen.', 'fluentcart-germanized') . '</p><!-- /wp:paragraph -->' . $disclaimer,
+                '<!-- wp:shortcode -->[fcg_datenschutz]<!-- /wp:shortcode -->',
             ],
             'page_agb' => [
                 'agb',
                 __('Allgemeine Geschäftsbedingungen', 'fluentcart-germanized'),
-                '<!-- wp:paragraph --><p>' . esc_html__('Hier Ihre AGB einfügen.', 'fluentcart-germanized') . '</p><!-- /wp:paragraph -->' . $disclaimer,
+                '<!-- wp:shortcode -->[fcg_agb]<!-- /wp:shortcode -->',
             ],
             'page_widerruf' => [
                 'widerrufsbelehrung',
@@ -50,7 +50,7 @@ class Installer
             'page_versand' => [
                 'versand-und-zahlung',
                 __('Versand & Zahlung', 'fluentcart-germanized'),
-                '<!-- wp:paragraph --><p>' . esc_html__('Hier Versandkosten, Lieferzeiten und Zahlungsarten beschreiben.', 'fluentcart-germanized') . '</p><!-- /wp:paragraph -->' . $disclaimer,
+                '<!-- wp:shortcode -->[fcg_versand]<!-- /wp:shortcode -->',
             ],
         ];
     }
