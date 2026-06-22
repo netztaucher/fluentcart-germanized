@@ -206,7 +206,7 @@ class Withdrawal
             <?php wp_nonce_field(self::NONCE_FORM, '_fcg_nonce'); ?>
             <div class="fcg-hp" aria-hidden="true">
                 <label><?php esc_html_e('Dieses Feld bitte leer lassen', 'fluentcart-germanized'); ?>
-                    <input type="text" name="fcg_website" tabindex="-1" autocomplete="off" value="">
+                    <input type="text" name="fcg_hp_check" tabindex="-1" autocomplete="off" value="">
                 </label>
             </div>
             <p><em><?php esc_html_e('Muster-Widerrufsformular (Anlage 2 zu Art. 246a EGBGB). Bitte ausfüllen und absenden.', 'fluentcart-germanized'); ?></em></p>
@@ -350,7 +350,8 @@ class Withdrawal
         }
 
         // Honeypot: gefüllt = Bot -> still verwerfen (kein Versand, keine Speicherung), als Erfolg tarnen.
-        if (!empty($_POST['fcg_website'])) {
+        // Neutraler Feldname (kein Autofill-Keyword wie "website"/"url"), sonst werden echte Submits verworfen.
+        if (!empty($_POST['fcg_hp_check'])) {
             $back = wp_get_referer() ?: home_url('/');
             wp_safe_redirect(add_query_arg('fcg_widerruf', 'ok', $back));
             exit;
