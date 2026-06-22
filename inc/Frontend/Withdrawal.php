@@ -472,52 +472,17 @@ class Withdrawal
             return;
         }
 
-        $list = get_option(self::OPTION_REQUESTS, []);
-        if (!is_array($list)) {
-            $list = [];
-        }
-        $statusLabel = function ($s) {
-            if ($s === 'handled') {
-                return '✓ ' . __('erledigt', 'fluentcart-germanized');
-            }
-            if ($s === 'answered') {
-                return '✉ ' . __('beantwortet', 'fluentcart-germanized');
-            }
-            return __('offen', 'fluentcart-germanized');
-        };
-        $listUrl = admin_url('admin.php?page=fcg-withdrawals');
+        $table = new \FluentCartGermanized\Admin\WithdrawalsTable();
+        $table->handle_actions(); // Bulk-/Einzel-Löschung verarbeiten (kann redirecten)
+        $table->prepare_items();
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Widerrufe', 'fluentcart-germanized'); ?></h1>
-            <p class="description"><?php esc_html_e('1-Klick-Widerrufe sind zusätzlich direkt an der jeweiligen Bestellung (Notiz) vermerkt.', 'fluentcart-germanized'); ?></p>
-            <?php if (!$list): ?>
-                <p><?php esc_html_e('Keine Widerrufe vorhanden.', 'fluentcart-germanized'); ?></p>
-            <?php else: ?>
-            <table class="widefat striped">
-                <thead><tr>
-                    <th><?php esc_html_e('Zeit (UTC)', 'fluentcart-germanized'); ?></th>
-                    <th><?php esc_html_e('Quelle', 'fluentcart-germanized'); ?></th>
-                    <th><?php esc_html_e('Name', 'fluentcart-germanized'); ?></th>
-                    <th><?php esc_html_e('E-Mail', 'fluentcart-germanized'); ?></th>
-                    <th><?php esc_html_e('Bestellung', 'fluentcart-germanized'); ?></th>
-                    <th><?php esc_html_e('Status', 'fluentcart-germanized'); ?></th>
-                    <th></th>
-                </tr></thead>
-                <tbody>
-                <?php foreach ($list as $r): ?>
-                    <tr>
-                        <td><?php echo esc_html($r['time'] ?? ''); ?></td>
-                        <td><?php echo esc_html($r['source'] ?? ''); ?></td>
-                        <td><?php echo esc_html($r['name'] ?? ''); ?></td>
-                        <td><?php echo esc_html($r['email'] ?? ''); ?></td>
-                        <td><?php echo esc_html($r['order'] ?? ''); ?></td>
-                        <td><?php echo esc_html($statusLabel($r['status'] ?? 'open')); ?></td>
-                        <td><a class="button button-small" href="<?php echo esc_url(add_query_arg('view', $r['id'] ?? '', $listUrl)); ?>"><?php esc_html_e('Ansehen / Antworten', 'fluentcart-germanized'); ?></a></td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-            <?php endif; ?>
+            <p class="description"><?php esc_html_e('Mehrfachauswahl + Bulk-Aktionen oben. 1-Klick-Widerrufe sind zusätzlich an der jeweiligen Bestellung (Notiz) vermerkt.', 'fluentcart-germanized'); ?></p>
+            <form method="post">
+                <input type="hidden" name="page" value="fcg-withdrawals">
+                <?php $table->display(); ?>
+            </form>
         </div>
         <?php
     }
