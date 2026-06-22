@@ -441,9 +441,18 @@ class Withdrawal
         if (!is_array($list)) {
             $list = [];
         }
-        $entry['time'] = gmdate('Y-m-d H:i:s');
-        $entry['status'] = 'open';
-        $entry['id'] = uniqid('w', false);
+        $entry['time']       = gmdate('Y-m-d H:i:s');
+        $entry['time_local'] = current_time('mysql');
+        $entry['status']     = 'open';
+        $entry['id']         = uniqid('w', false);
+
+        // Vollständige Request-Details erfassen (Widerruf-Nachweis)
+        $entry['ip']         = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
+        $entry['user_agent'] = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+        $entry['referer']    = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
+        $entry['user_id']    = get_current_user_id();
+        $entry['user_login'] = is_user_logged_in() ? wp_get_current_user()->user_login : '';
+
         array_unshift($list, $entry);
         $list = array_slice($list, 0, 300);
         update_option(self::OPTION_REQUESTS, $list, false);
@@ -520,6 +529,11 @@ class Withdrawal
                 <tr><th><?php esc_html_e('E-Mail', 'fluentcart-germanized'); ?></th><td><?php echo $email ? '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>' : '—'; ?></td></tr>
                 <tr><th><?php esc_html_e('Bestellung', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['order'] ?? ''); ?></td></tr>
                 <tr><th><?php esc_html_e('Bestelldatum', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['dates'] ?? ''); ?></td></tr>
+                <tr><th><?php esc_html_e('Ortszeit', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['time_local'] ?? '—'); ?></td></tr>
+                <tr><th><?php esc_html_e('IP-Adresse', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['ip'] ?? '—'); ?></td></tr>
+                <tr><th><?php esc_html_e('Browser / User-Agent', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['user_agent'] ?? '—'); ?></td></tr>
+                <tr><th><?php esc_html_e('Herkunft (Referer)', 'fluentcart-germanized'); ?></th><td><?php echo $entry['referer'] ? '<a href="' . esc_url($entry['referer']) . '" target="_blank" rel="noopener">' . esc_html($entry['referer']) . '</a>' : '—'; ?></td></tr>
+                <tr><th><?php esc_html_e('Benutzerkonto', 'fluentcart-germanized'); ?></th><td><?php echo !empty($entry['user_id']) ? esc_html(($entry['user_login'] ?? '') . ' (#' . (int) $entry['user_id'] . ')') : esc_html__('Gast (nicht eingeloggt)', 'fluentcart-germanized'); ?></td></tr>
             </table>
 
             <?php if (!empty($entry['replies']) && is_array($entry['replies'])): ?>
