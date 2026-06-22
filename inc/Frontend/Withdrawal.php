@@ -87,6 +87,7 @@ class Withdrawal
             . '.fcg-orders .fcg-do-withdraw{cursor:pointer;padding:6px 12px;border:0;border-radius:6px;background:#253241;color:#fff;font-size:13px}'
             . '.fcg-orders .fcg-do-withdraw[disabled]{opacity:.5;cursor:default}'
             . '.fcg-orders .fcg-state-done{color:#15803d;font-weight:600}'
+            . '.fcg-hp{position:absolute!important;left:-9999px!important;top:auto;width:1px;height:1px;overflow:hidden}'
             . '.fcg-widerruf-form input,.fcg-widerruf-form textarea{max-width:420px}'
             . '.fcg-withdraw-msg{margin:8px 0;font-size:14px}';
         wp_register_style('fcg-withdrawal', false);
@@ -202,6 +203,11 @@ class Withdrawal
         <form class="fcg-widerruf-form" id="fcg-widerruf" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="fcg_widerruf">
             <?php wp_nonce_field(self::NONCE_FORM, '_fcg_nonce'); ?>
+            <div class="fcg-hp" aria-hidden="true">
+                <label><?php esc_html_e('Dieses Feld bitte leer lassen', 'fluentcart-germanized'); ?>
+                    <input type="text" name="fcg_website" tabindex="-1" autocomplete="off" value="">
+                </label>
+            </div>
             <p><em><?php esc_html_e('Muster-Widerrufsformular (Anlage 2 zu Art. 246a EGBGB). Bitte ausfüllen und absenden.', 'fluentcart-germanized'); ?></em></p>
             <p><label><?php esc_html_e('Name', 'fluentcart-germanized'); ?><br><input type="text" name="fcg_name" required></label></p>
             <p><label><?php esc_html_e('E-Mail', 'fluentcart-germanized'); ?><br><input type="email" name="fcg_email" required></label></p>
@@ -342,6 +348,13 @@ class Withdrawal
             wp_die(esc_html__('Sicherheitsprüfung fehlgeschlagen.', 'fluentcart-germanized'));
         }
 
+        // Honeypot: gefüllt = Bot -> still verwerfen (kein Versand, keine Speicherung), als Erfolg tarnen.
+        if (!empty($_POST['fcg_website'])) {
+            $back = wp_get_referer() ?: home_url('/');
+            wp_safe_redirect(add_query_arg('fcg_widerruf', 'ok', $back));
+            exit;
+        }
+
         $name  = isset($_POST['fcg_name']) ? sanitize_text_field(wp_unslash($_POST['fcg_name'])) : '';
         $email = isset($_POST['fcg_email']) ? sanitize_email(wp_unslash($_POST['fcg_email'])) : '';
         $order = isset($_POST['fcg_order']) ? sanitize_text_field(wp_unslash($_POST['fcg_order'])) : '';
@@ -364,10 +377,9 @@ class Withdrawal
             'dates'  => $dates,
         ]);
 
+        // Nur den Shop benachrichtigen. KEINE Bestätigung an die (unverifizierte) Absender-Adresse
+        // -> verhindert Mailversand-Missbrauch über das Gast-Formular. Bestätigung erfolgt durch den Shop.
         wp_mail($this->shopEmail(), sprintf(__('Widerruf-Anfrage – %s', 'fluentcart-germanized'), $name), $body);
-        if ($email && is_email($email)) {
-            wp_mail($email, __('Eingangsbestätigung Ihres Widerrufs', 'fluentcart-germanized'), __('Wir bestätigen den Eingang Ihrer Widerruf-Anfrage. Details:', 'fluentcart-germanized') . "\n\n" . $body);
-        }
 
         $back = wp_get_referer() ?: home_url('/');
         wp_safe_redirect(add_query_arg('fcg_widerruf', 'ok', $back));
