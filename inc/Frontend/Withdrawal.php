@@ -38,6 +38,7 @@ class Withdrawal
         if (is_admin()) {
             add_action('admin_menu', [$this, 'adminMenu'], 12);
             add_action('admin_post_fcg_withdraw_mark', [$this, 'markHandled']);
+            add_action('admin_post_fcg_withdraw_reply', [$this, 'reply']);
         }
 
         if (Settings::get('withdrawal_button_footer') === 'yes') {
@@ -465,10 +466,26 @@ class Withdrawal
         if (!current_user_can('manage_options')) {
             return;
         }
+        $viewId = isset($_GET['view']) ? sanitize_text_field(wp_unslash($_GET['view'])) : '';
+        if ($viewId !== '') {
+            $this->renderDetail($viewId);
+            return;
+        }
+
         $list = get_option(self::OPTION_REQUESTS, []);
         if (!is_array($list)) {
             $list = [];
         }
+        $statusLabel = function ($s) {
+            if ($s === 'handled') {
+                return '✓ ' . __('erledigt', 'fluentcart-germanized');
+            }
+            if ($s === 'answered') {
+                return '✉ ' . __('beantwortet', 'fluentcart-germanized');
+            }
+            return __('offen', 'fluentcart-germanized');
+        };
+        $listUrl = admin_url('admin.php?page=fcg-withdrawals');
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Widerrufe', 'fluentcart-germanized'); ?></h1>
@@ -494,21 +511,87 @@ class Withdrawal
                         <td><?php echo esc_html($r['name'] ?? ''); ?></td>
                         <td><?php echo esc_html($r['email'] ?? ''); ?></td>
                         <td><?php echo esc_html($r['order'] ?? ''); ?></td>
-                        <td><?php echo ($r['status'] ?? 'open') === 'handled' ? '✓ ' . esc_html__('erledigt', 'fluentcart-germanized') : esc_html__('offen', 'fluentcart-germanized'); ?></td>
-                        <td>
-                            <?php if (($r['status'] ?? 'open') !== 'handled'): ?>
-                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0">
-                                <input type="hidden" name="action" value="fcg_withdraw_mark">
-                                <input type="hidden" name="id" value="<?php echo esc_attr($r['id'] ?? ''); ?>">
-                                <?php wp_nonce_field('fcg_withdraw_mark'); ?>
-                                <button class="button button-small"><?php esc_html_e('Als erledigt markieren', 'fluentcart-germanized'); ?></button>
-                            </form>
-                            <?php endif; ?>
-                        </td>
+                        <td><?php echo esc_html($statusLabel($r['status'] ?? 'open')); ?></td>
+                        <td><a class="button button-small" href="<?php echo esc_url(add_query_arg('view', $r['id'] ?? '', $listUrl)); ?>"><?php esc_html_e('Ansehen / Antworten', 'fluentcart-germanized'); ?></a></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    private function renderDetail($id)
+    {
+        $list = get_option(self::OPTION_REQUESTS, []);
+        $entry = null;
+        if (is_array($list)) {
+            foreach ($list as $r) {
+                if (($r['id'] ?? '') === $id) {
+                    $entry = $r;
+                    break;
+                }
+            }
+        }
+        $listUrl = admin_url('admin.php?page=fcg-withdrawals');
+        if (!$entry) {
+            echo '<div class="wrap"><h1>' . esc_html__('Widerruf', 'fluentcart-germanized') . '</h1><p>' . esc_html__('Eintrag nicht gefunden.', 'fluentcart-germanized') . '</p><a href="' . esc_url($listUrl) . '">&larr; ' . esc_html__('Zurück', 'fluentcart-germanized') . '</a></div>';
+            return;
+        }
+        $email = $entry['email'] ?? '';
+        $notice = isset($_GET['fcg_sent']) ? (int) $_GET['fcg_sent'] : -1;
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e('Widerruf-Details', 'fluentcart-germanized'); ?></h1>
+            <p><a href="<?php echo esc_url($listUrl); ?>">&larr; <?php esc_html_e('Zur Übersicht', 'fluentcart-germanized'); ?></a></p>
+            <?php if ($notice === 1): ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e('Antwort gesendet.', 'fluentcart-germanized'); ?></p></div><?php elseif ($notice === 0): ?><div class="notice notice-error is-dismissible"><p><?php esc_html_e('Antwort konnte nicht gesendet werden (E-Mail fehlt/ungültig).', 'fluentcart-germanized'); ?></p></div><?php endif; ?>
+
+            <table class="form-table">
+                <tr><th><?php esc_html_e('Zeit (UTC)', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['time'] ?? ''); ?></td></tr>
+                <tr><th><?php esc_html_e('Quelle', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['source'] ?? ''); ?></td></tr>
+                <tr><th><?php esc_html_e('Status', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['status'] ?? 'open'); ?></td></tr>
+                <tr><th><?php esc_html_e('Name', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['name'] ?? ''); ?></td></tr>
+                <tr><th><?php esc_html_e('E-Mail', 'fluentcart-germanized'); ?></th><td><?php echo $email ? '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>' : '—'; ?></td></tr>
+                <tr><th><?php esc_html_e('Bestellung', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['order'] ?? ''); ?></td></tr>
+                <tr><th><?php esc_html_e('Bestelldatum', 'fluentcart-germanized'); ?></th><td><?php echo esc_html($entry['dates'] ?? ''); ?></td></tr>
+            </table>
+
+            <?php if (!empty($entry['replies']) && is_array($entry['replies'])): ?>
+                <h2><?php esc_html_e('Antworten', 'fluentcart-germanized'); ?></h2>
+                <ul class="ul-disc">
+                    <?php foreach ($entry['replies'] as $rep): ?>
+                        <li><strong><?php echo esc_html($rep['time'] ?? ''); ?> UTC:</strong><br><?php echo nl2br(esc_html($rep['message'] ?? '')); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <h2><?php esc_html_e('Antwort an Kunde senden', 'fluentcart-germanized'); ?></h2>
+            <?php if (!$email || !is_email($email)): ?>
+                <p><em><?php esc_html_e('Keine gültige E-Mail-Adresse hinterlegt – keine Antwort möglich.', 'fluentcart-germanized'); ?></em></p>
+            <?php else: ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="fcg_withdraw_reply">
+                <input type="hidden" name="id" value="<?php echo esc_attr($id); ?>">
+                <?php wp_nonce_field('fcg_withdraw_reply'); ?>
+                <p><label><?php esc_html_e('Betreff', 'fluentcart-germanized'); ?><br>
+                    <input type="text" class="regular-text" name="subject" value="<?php echo esc_attr(sprintf(__('Ihr Widerruf%s', 'fluentcart-germanized'), $entry['order'] ? ' – ' . $entry['order'] : '')); ?>"></label></p>
+                <p><label><?php esc_html_e('Nachricht', 'fluentcart-germanized'); ?><br>
+                    <textarea name="message" rows="8" class="large-text" required></textarea></label></p>
+                <p>
+                    <label><input type="checkbox" name="mark_handled" value="yes" checked> <?php esc_html_e('Gleichzeitig als erledigt markieren', 'fluentcart-germanized'); ?></label>
+                </p>
+                <?php submit_button(__('Antwort senden', 'fluentcart-germanized')); ?>
+            </form>
+            <?php endif; ?>
+
+            <?php if (($entry['status'] ?? 'open') !== 'handled'): ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:8px">
+                <input type="hidden" name="action" value="fcg_withdraw_mark">
+                <input type="hidden" name="id" value="<?php echo esc_attr($id); ?>">
+                <?php wp_nonce_field('fcg_withdraw_mark'); ?>
+                <button class="button"><?php esc_html_e('Als erledigt markieren', 'fluentcart-germanized'); ?></button>
+            </form>
             <?php endif; ?>
         </div>
         <?php
@@ -533,6 +616,48 @@ class Withdrawal
             update_option(self::OPTION_REQUESTS, $list, false);
         }
         wp_safe_redirect(admin_url('admin.php?page=fcg-withdrawals'));
+        exit;
+    }
+
+    public function reply()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die('');
+        }
+        check_admin_referer('fcg_withdraw_reply');
+
+        $id      = isset($_POST['id']) ? sanitize_text_field(wp_unslash($_POST['id'])) : '';
+        $subject = isset($_POST['subject']) ? sanitize_text_field(wp_unslash($_POST['subject'])) : '';
+        $message = isset($_POST['message']) ? sanitize_textarea_field(wp_unslash($_POST['message'])) : '';
+        $markHandled = (isset($_POST['mark_handled']) && $_POST['mark_handled'] === 'yes');
+
+        $detailUrl = add_query_arg('view', $id, admin_url('admin.php?page=fcg-withdrawals'));
+
+        $list = get_option(self::OPTION_REQUESTS, []);
+        $sent = 0;
+        if (is_array($list)) {
+            foreach ($list as &$r) {
+                if (($r['id'] ?? '') !== $id) {
+                    continue;
+                }
+                $email = $r['email'] ?? '';
+                if ($email && is_email($email) && $message !== '') {
+                    if (wp_mail($email, $subject ?: __('Ihr Widerruf', 'fluentcart-germanized'), $message)) {
+                        $sent = 1;
+                        if (!isset($r['replies']) || !is_array($r['replies'])) {
+                            $r['replies'] = [];
+                        }
+                        $r['replies'][] = ['time' => gmdate('Y-m-d H:i:s'), 'message' => $message];
+                        $r['status'] = $markHandled ? 'handled' : 'answered';
+                    }
+                }
+                break;
+            }
+            unset($r);
+            update_option(self::OPTION_REQUESTS, $list, false);
+        }
+
+        wp_safe_redirect(add_query_arg('fcg_sent', $sent, $detailUrl));
         exit;
     }
 
